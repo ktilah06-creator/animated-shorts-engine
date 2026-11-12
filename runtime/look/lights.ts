@@ -13,7 +13,7 @@ export type LightPreset = {
   sunCol: string; sunI: number; sky: string; ground: string; hemiI: number;         // three lights (unpatched mats only)
   bias: number; normalBias: number;
 };
-export const LIGHTS: Record<"day" | "golden", LightPreset> = {
+export const LIGHTS: Record<string, LightPreset> = {
   day: {
     az: 75, el: 48,
     lit: [1.58, 1.5, 1.33], shade: [0.3, 0.29, 0.36], lift: [0.05, 0.06, 0.11], lambert: 0.35, sideK: 0.84, term: 0.2,
@@ -43,7 +43,7 @@ export type WorldLook = {
   sat: number;                                                // shade.ts uSat: world albedo saturation (1 = as painted)
   cloud: { lit: string; mid: string; shade: string };
 };
-export const LOOK: Record<"day" | "golden", WorldLook> = {
+export const LOOK: Record<string, WorldLook> = {
   day: {
     // depth.md 2.2: horizon #9fb6e6 just above the skyline, upper sky #5e93d9 at ~20 deg (grade: frame top #5997e2)
     sky: { c: ["#b8d0ec", "#9cbfea", "#6a9fe0", "#4f8cdb", "#3373cc"], e: [0, 3, 8, 16, 40] },
@@ -61,4 +61,25 @@ export const LOOK: Record<"day" | "golden", WorldLook> = {
     bounce: [0.04, 0.02, 0.0],
     sat: 1.1,
   },
+};
+
+// ---------------------------------------------------------------- engine-owned presets (channel look)
+// summer: softer, less saturated than "day" (storybook greens instead of lime); overcast: low contrast, cool, weak
+// sun, hazy distance (rain / snow / gloom). Start values, tuned on renders and approved with the user.
+LIGHTS.summer = {
+  ...LIGHTS.day, az: 65, el: 38,
+  lit: [1.45, 1.38, 1.22], shade: [0.34, 0.33, 0.4], lift: [0.06, 0.07, 0.11], term: 0.24,
+  fog: "#c7d6e6", fogNear: 30, fogFar: 320, sunCol: "#fff0d8", sunI: 2.5,
+};
+LOOK.summer = { ...LOOK.day, sat: 0.86, sky: { c: ["#cddcea", "#b6cde8", "#8db4e2", "#6c9ed9", "#4f86cc"], e: [0, 3, 8, 16, 40] } };
+LIGHTS.overcast = {
+  ...LIGHTS.day, az: 30, el: 60,
+  lit: [0.98, 1.0, 1.06], shade: [0.6, 0.63, 0.72], lift: [0.07, 0.08, 0.11], lambert: 0.5, sideK: 0.9, term: 0.45,
+  fog: "#c3c9d2", fogNear: 12, fogFar: 150, sunCol: "#e2e8f2", sunI: 0.9, sky: "#d4dbe6", ground: "#8d9096", hemiI: 0.7,
+};
+LOOK.overcast = {
+  sky: { c: ["#c9ced6", "#bfc6d0", "#b0b9c6", "#a2acbb", "#8e99aa"], e: [0, 3, 8, 16, 40] },
+  water: { near: "#4a6272", mid: "#5d7484", far: "#a7b2bd", crest: "#c9d2da", trough: "#33485a", glint: "#e8eef4", shade: [0.7, 0.72, 0.78] },
+  cloud: { lit: "#e4e7ec", mid: "#c9ced6", shade: "#a8afbb" },
+  bounce: [0, 0, 0], sat: 0.72,
 };

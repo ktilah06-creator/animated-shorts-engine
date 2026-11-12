@@ -17,7 +17,21 @@ export type RigPreset = { light: LightPreset; look: WorldLook; showSun: boolean 
 export const RIG_PRESETS: Record<string, RigPreset> = {
   day: { light: LIGHTS.day, look: LOOK.day, showSun: false },
   golden: { light: LIGHTS.golden, look: LOOK.golden, showSun: true },
+  summer: { light: LIGHTS.summer, look: LOOK.summer, showSun: false },
+  overcast: { light: LIGHTS.overcast, look: LOOK.overcast, showSun: false },
 };
+/** blend two presets (numbers and colours interpolate) - for weather turning within a shot */
+export function mixPreset(a: string, b: string, t: number): RigPreset {
+  const A = RIG_PRESETS[a], B = RIG_PRESETS[b];
+  const mix = (x: unknown, y: unknown): unknown => {
+    if (typeof x === "number" && typeof y === "number") return x + (y - x) * t;
+    if (typeof x === "string" && typeof y === "string" && x.startsWith("#") && y.startsWith("#")) return "#" + new THREE.Color(x).lerp(new THREE.Color(y), t).getHexString();
+    if (Array.isArray(x) && Array.isArray(y)) return x.map((v, i) => mix(v, y[i]));
+    if (x && y && typeof x === "object" && typeof y === "object") return Object.fromEntries(Object.keys(x).map((k) => [k, mix((x as Record<string, unknown>)[k], (y as Record<string, unknown>)[k])]));
+    return t < 0.5 ? x : y;
+  };
+  return { light: mix(A.light, B.light) as LightPreset, look: mix(A.look, B.look) as WorldLook, showSun: t < 0.5 ? A.showSun : B.showSun };
+}
 
 const tex = (w: number, h: number, draw: (g: CanvasRenderingContext2D) => void) => {
   const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d")!);

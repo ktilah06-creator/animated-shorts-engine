@@ -147,4 +147,11 @@ export const GRADE_NIGHT: GradeParams = {
   tintS: [0.03, -0.01], tintM: [0.015, -0.005], tintH: [0, 0],
   vig: [0.25, 0.38],
 };
-export const GRADES: Record<string, GradeParams> = { neutral: GRADE_NEUTRAL, day: GRADE_DAY, golden: GRADE_GOLDEN, night: GRADE_NIGHT };
+export const GRADE_COLD: GradeParams = {
+  ky: [0, 0.1, 0.27, 0.56, 0.8, 0.93, 1],
+  sat: [0.85, 0.82, 0.85],
+  tintS: [0.025, -0.012], tintM: [0.012, -0.006], tintH: [0.006, -0.004],
+  vig: [0.18, 0.42],
+};
+export const GRADES: Record<string, GradeParams> = { neutral: GRADE_NEUTRAL, day: GRADE_DAY, golden: GRADE_GOLDEN, night: GRADE_NIGHT,
+  summer: GRADE_DAY, overcast: GRADE_COLD, cold: GRADE_COLD };
