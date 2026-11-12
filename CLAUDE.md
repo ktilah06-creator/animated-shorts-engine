@@ -13,7 +13,7 @@ SEO and publishing are handled by the user elsewhere: do not take them on.
   (Poly Haven, Kenney, ambientCG, Quaternius, ... check the asset's own page). Create new assets only when nothing fits.
 - Approved versions are immutable. Never edit files under `library/assets/`. A change is a new version via
   `stage` + `promote`. Never delete approved assets without the user's explicit permission.
-- Every version needs source, creator, license (CC0 / CC-BY / MIT / OFL / Apache / Zlib / Original; never NC or ND),
+- Every version needs source, creator, license (CC0 / CC-BY / MIT / OFL / Apache / Zlib / Public-Domain / Original; never NC or ND),
   license evidence for external assets, and modifications. `asset validate` checks all of it.
 - Films import pinned versions only: `@lib/<type>/<name>@<version>`.
 

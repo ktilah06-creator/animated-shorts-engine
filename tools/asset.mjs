@@ -26,7 +26,7 @@ const CHANGELOG = path.join(LIB, "asset_change_log.md");
 export const LICENSES_OK = {
   "CC0-1.0": { attribution: false }, "CC-BY-4.0": { attribution: true }, "CC-BY-3.0": { attribution: true },
   "MIT": { attribution: true }, "Apache-2.0": { attribution: true }, "Zlib": { attribution: false }, "OFL-1.1": { attribution: false },
-  "BSD-3-Clause": { attribution: true }, "Original": { attribution: false },
+  "BSD-3-Clause": { attribution: true }, "Original": { attribution: false }, "Public-Domain": { attribution: false },
 };
 
 const today = () => new Date().toISOString().slice(0, 10);

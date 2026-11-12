@@ -13,7 +13,7 @@ export const ctex = (key: string, w: number, h: number, draw: (g: CanvasRenderin
   if (!t) {
     const cv = document.createElement("canvas");
     cv.width = w; cv.height = h;
-    draw(cv.getContext("2d")!, rng(key.length * 131 + key.charCodeAt(0)));
+    draw(cv.getContext("2d", { willReadFrequently: true })!, rng(key.length * 131 + key.charCodeAt(0))); // engine: CPU raster (fast without GPU)
     t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 8;

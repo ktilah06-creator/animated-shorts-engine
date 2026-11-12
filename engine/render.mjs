@@ -50,14 +50,19 @@ export async function openFilm(id, { scale = 1, post, log = console.log } = {}) 
   const page = await browser.newPage({ viewport: { width: 64, height: 64 }, deviceScaleFactor: 1 });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  if (process.env.ENGINE_DEBUG) page.on("console", (m) => log(`page: ${m.text()}`));
   page.on("console", (m) => { if (m.type() === "error" && !/GL Driver Message|Failed to load resource/.test(m.text())) errors.push(m.text()); });
   page.on("response", (r) => { if (r.status() >= 400) errors.push(`HTTP ${r.status()} for ${r.url().replace(/^http:\/\/127\.0\.0\.1:\d+/, "")}`); });
   const qs = new URLSearchParams({ scale: String(scale), ...(post ? { post: JSON.stringify(post) } : {}) });
   await page.goto(`http://127.0.0.1:${port}/index.html?${qs}`);
   let meta;
   try {
-    await page.waitForFunction(() => window.__engine && (window.__engine.meta || window.__engine.error || true), null, { timeout: 30000 });
+    // the bundle defines window.__engine as soon as it loads; setup (building sets, painting textures) may then keep
+    // the page busy for a while, so wait for setup without a short timeout
+    await page.waitForFunction(() => !!window.__engine, null, { timeout: 60000, polling: 200 });
+    const t0 = Date.now();
     meta = await page.evaluate(async () => { try { return await window.__engine.ready; } catch (e) { return { error: String(window.__engine.error || e) }; } });
+    if (meta && !meta.error) log(`setup ${((Date.now() - t0) / 1000).toFixed(1)} s`);
   } catch (e) { meta = { error: `film did not start: ${e.message}\n${errors.join("\n")}` }; }
   if (!meta || meta.error) { await browser.close(); srv.close(); throw new Error(`film ${id} failed during setup:\n${meta?.error}\n${errors.join("\n")}`); }
   await page.setViewportSize({ width: meta.width, height: meta.height });
