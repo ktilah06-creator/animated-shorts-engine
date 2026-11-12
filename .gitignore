@@ -1,0 +1,9 @@
+# fetched by `node engine/cli.mjs vendor` (pinned in engine/pins.json)
+vendor/
+# build and render outputs
+.build/
+out/
+cache/
+node_modules/
+__pycache__/
+*.pyc

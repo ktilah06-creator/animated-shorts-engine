@@ -1,0 +1,15 @@
+{
+  "name": "animated-shorts-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable engine for hybrid 2D/3D animated vertical shorts: three.js in headless Chrome, encoded with ffmpeg.",
+  "scripts": {
+    "vendor": "node engine/cli.mjs vendor",
+    "test": "node engine/cli.mjs selftest"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "playwright": "^1.50.0"
+  }
+}
