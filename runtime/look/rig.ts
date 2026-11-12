@@ -61,6 +61,8 @@ export class LightRig {
   private skyMat: THREE.ShaderMaterial;
   private disc: THREE.Sprite;
   private halo: THREE.Sprite;
+  /** preset applied last (water / clouds / films can follow it) */
+  current: RigPreset = RIG_PRESETS.day;
   private dir = new THREE.Vector3();
   private fwd = new THREE.Vector3();
 
@@ -100,6 +102,7 @@ export class LightRig {
     const P = typeof name === "string" ? RIG_PRESETS[name] : name;
     if (!P) throw new Error(`LightRig: unknown preset ${name}`);
     const L = P.light, K = P.look;
+    this.current = P;
     cam.layers.enable(NOINK);
     cam.getWorldDirection(this.fwd);
     const sunDir = o.sunDir ? this.dir.copy(o.sunDir).normalize() : sunFromView(this.fwd, o.az ?? L.az, o.el ?? L.el, this.dir);
