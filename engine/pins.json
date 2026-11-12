@@ -1,0 +1,25 @@
+{
+  "three": {
+    "repo": "https://github.com/mrdoob/three.js",
+    "ref": "r187",
+    "paths": [
+      "build",
+      "examples/jsm"
+    ],
+    "license": "MIT"
+  },
+  "postprocessing": {
+    "repo": "https://github.com/pmndrs/postprocessing",
+    "ref": "v6.39.6",
+    "paths": [
+      "src",
+      "LICENSE.md",
+      "package.json"
+    ],
+    "license": "Zlib",
+    "stubs": [
+      "temp/smaa/worker.txt",
+      "temp/lut/worker.txt"
+    ]
+  }
+}
