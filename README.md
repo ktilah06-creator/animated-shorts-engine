@@ -3,7 +3,7 @@
 Reusable engine for hybrid 2D/3D animated vertical shorts. A film is a TypeScript module that builds a three.js
 world and poses it per frame; the engine renders it deterministically in headless Chrome and encodes it with ffmpeg.
 
-Status: **engine core (M0-M2)**. Character system, environment kits, overlays, sound and the technical demo follow.
+Status: **engine core + visual components**. Character system, overlays, sound and the technical demo follow.
 
 ## Requirements
 - Node 20+, ffmpeg/ffprobe, Python 3 with numpy + Pillow (QA), git.
@@ -67,7 +67,15 @@ without DOF, ≈ 3.4 s/frame with DOF; preview (540x960, no MSAA) ≈ 0.5-1.0 s/
 ## Layout
 ```
 engine/    Node side: env, vendor pins, bundler, renderer, CLI, selftest
-runtime/   browser side: film.ts (core), camera.ts, post/ (ink, dof, lensblur, grade), look/ (rig, lights, shade)
+runtime/   browser side
+  film.ts       core: renderer, post chain, shots, crossfades, flashes, overlay DOM, rng
+  camera.ts     camPath (keys, glides, creep, kicks, roll), orbit, dolly
+  post/         ink (world outlines), dof (half-res depth of field), lensblur (full-res), grade
+  look/         rig (sky, sun, fog, shadow fit, presets), lights (presets), shade (two-tone), materials
+                (cached two-tone materials, GLB conversion + recolour), paint (procedural textures),
+                water, clouds
+  env/          geo (quad/tri/boxGeo, Batch merging), strand (ropes, rails, chains), sight (sight-line
+                culling), vegetation, house (gabled house generator), banner, kit (GLB kits from the library)
 library/   approved assets (immutable versions), manifest, licenses, credits
 tools/     asset.mjs (library CLI)
 qa/        short_qa.py (frame-by-frame QA), sbs_sheet.py (side-by-side sheets)
