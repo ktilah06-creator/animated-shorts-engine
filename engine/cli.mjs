@@ -4,6 +4,7 @@
 //   node engine/cli.mjs build   <film>                           bundle only (fast syntax/import check)
 //   node engine/cli.mjs stills  <film> <f1,f2,..> [--scale 0.5] [--post '{"ink":false}']
 //   node engine/cli.mjs render  <film> [--preview] [--only s1,s2] [--audio file.wav] [--scale x] [--crf n]
+//   node engine/cli.mjs cues    <film> <audio> [script.txt]          optional timing cues -> videos/<film>/cues.json
 //   node engine/cli.mjs qa      <video.mp4> [--film <film>]       frame-by-frame technical QA (qa/short_qa.py)
 //   node engine/cli.mjs selftest                                 engine checks (bundle, determinism, cache, concat)
 import path from "node:path";
@@ -47,6 +48,15 @@ async function main() {
       console.log(`wrote ${path.relative(P.root, file)}  ${JSON.stringify(report.probe)}`);
       break;
     }
+    case "cues": {
+      const out = execFileSync(python, [path.join(P.root, "engine/cues.py"), pos[1], ...(pos[2] ? [pos[2]] : [])], { encoding: "utf8", maxBuffer: 64 << 20 });
+      const file = path.join(P.videos, pos[0], "cues.json");
+      fs.writeFileSync(file, out);
+      const j = JSON.parse(out);
+      console.log(`wrote ${path.relative(P.root, file)}: ${j.duration} s, ${j.pauses.length} pauses${j.sentences ? `, ${j.sentences.length} sentences` : ""}`);
+      for (const s of j.sentences ?? []) console.log(`  ${s.t0.toFixed(2).padStart(6)}-${s.t1.toFixed(2).padStart(6)}  ${s.text}`);
+      break;
+    }
     case "qa": {
       const video = pos[0];
       const outDir = flags.out ?? path.join(path.dirname(video), "qa");
@@ -60,7 +70,7 @@ async function main() {
       break;
     }
     default:
-      console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 9).join("\n").replace(/^\/\/ ?/gm, ""));
+      console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 10).join("\n").replace(/^\/\/ ?/gm, ""));
       process.exitCode = cmd ? 1 : 0;
   }
 }
