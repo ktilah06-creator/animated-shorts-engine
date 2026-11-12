@@ -16,7 +16,7 @@ type FallOpts = { count?: number; area?: [number, number, number]; speed?: numbe
 
 /** falling particles (snow by default; rain = fast, thin, streak) */
 export class Fall {
-  readonly points: THREE.Points;
+  readonly points: THREE.Points | THREE.LineSegments;
   private base: Float32Array;
   private pos: Float32Array;
   constructor(private o: FallOpts = {}) {
@@ -25,9 +25,16 @@ export class Fall {
     let s = (o.seed ?? 1) * 9973 + 17;
     const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
     for (let i = 0; i < n; i++) { this.base[i * 4] = r() * w; this.base[i * 4 + 1] = r() * h; this.base[i * 4 + 2] = r() * d; this.base[i * 4 + 3] = 0.6 + r() * 0.8; }
-    this.pos = new Float32Array(n * 3);
+    const streak = !!o.streak;
+    this.pos = new Float32Array(n * 3 * (streak ? 2 : 1));
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(this.pos, 3));
+    if (streak) {
+      // rain: each drop is a short line along its fall direction (motion-blur length)
+      this.points = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: o.color ?? "#d8e2ee", transparent: true, opacity: o.opacity ?? 0.55, depthWrite: false, fog: true }));
+      this.points.frustumCulled = false; this.points.layers.set(NOINK);
+      return;
+    }
     const m = new THREE.PointsMaterial({ map: flakeTex(o.streak ? 0.2 : 0.45), size: o.size ?? 0.07, color: o.color ?? "#ffffff", transparent: true,
       opacity: o.opacity ?? 0.95, depthWrite: false, sizeAttenuation: true, fog: true });
     this.points = new THREE.Points(g, m);
@@ -37,16 +44,21 @@ export class Fall {
   update(f: number, cam: THREE.Camera, fps = 30) {
     const [w, h, d] = this.o.area ?? [24, 12, 24], t = f / fps, sp = this.o.speed ?? 0.9, sw = this.o.sway ?? 0.35;
     const cx = cam.position.x - w / 2, cy = cam.position.y - h * 0.55, cz = cam.position.z - d / 2;
-    const n = this.pos.length / 3;
+    const streak = !!this.o.streak, n = this.base.length / 4;
+    const len = (this.o.streak ?? 0) * sp * 0.045;
     const wrap = (v: number, m: number) => ((v % m) + m) % m;
     for (let i = 0; i < n; i++) {
       const bx = this.base[i * 4], by = this.base[i * 4 + 1], bz = this.base[i * 4 + 2], k = this.base[i * 4 + 3];
-      this.pos[i * 3] = cx + wrap(bx - cx + Math.sin(t * 1.3 * k + i) * sw, w);
-      this.pos[i * 3 + 1] = cy + wrap(by - t * sp * k - cy, h);
-      this.pos[i * 3 + 2] = cz + wrap(bz - cz + Math.cos(t * 1.1 * k + i * 0.7) * sw, d);
+      const x = cx + wrap(bx - cx + Math.sin(t * 1.3 * k + i) * sw, w);
+      const y = cy + wrap(by - t * sp * k - cy, h);
+      const z = cz + wrap(bz - cz + Math.cos(t * 1.1 * k + i * 0.7) * sw, d);
+      if (streak) {
+        const o6 = i * 6; this.pos[o6] = x; this.pos[o6 + 1] = y; this.pos[o6 + 2] = z;
+        this.pos[o6 + 3] = x + 0.04 * len; this.pos[o6 + 4] = y + len * k; this.pos[o6 + 5] = z;
+      } else { this.pos[i * 3] = x; this.pos[i * 3 + 1] = y; this.pos[i * 3 + 2] = z; }
     }
     this.points.geometry.attributes.position.needsUpdate = true;
   }
-  set amount(a: number) { (this.points.material as THREE.PointsMaterial).opacity = (this.o.opacity ?? 0.95) * a; this.points.visible = a > 0.001; }
+  set amount(a: number) { (this.points.material as THREE.Material).opacity = (this.o.opacity ?? 0.95) * a; this.points.visible = a > 0.001; }
 }
 export const Snow = Fall;

@@ -34,7 +34,7 @@ export class Actor {
   /** height: metres from sole to head top for an adult design (scale applies on top) */
   constructor(public design: Design, public height = 1.7) {
     this.canvas.width = CW; this.canvas.height = CH;
-    this.g = this.canvas.getContext("2d")!;
+    this.g = this.canvas.getContext("2d", { willReadFrequently: true })!; // CPU raster (fast without a GPU; uploaded every frame)
     this.tex = new THREE.CanvasTexture(this.canvas);
     this.tex.colorSpace = THREE.SRGBColorSpace; this.tex.anisotropy = 8;
     this.mat = new THREE.MeshBasicMaterial({ map: this.tex, alphaTest: 0.5, side: THREE.DoubleSide, fog: true });

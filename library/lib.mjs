@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 export const LIB = path.dirname(fileURLToPath(import.meta.url));
 export const MANIFEST = path.join(LIB, "manifest.json");
 export const TYPES = ["character", "expression-set", "model", "environment", "env-module", "prop", "material", "texture",
-  "hdri", "lighting-preset", "camera-preset", "animation-pattern", "scene-component", "font", "audio", "effect"];
+  "hdri", "data", "lighting-preset", "camera-preset", "animation-pattern", "scene-component", "font", "audio", "effect"];
 export const REQUIRED = ["source.kind", "source.creator", "license.id", "created", "files"];
 
 export const vdir = (v) => "v" + String(v).padStart(3, "0");

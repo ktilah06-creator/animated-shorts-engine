@@ -10,9 +10,11 @@ import { addVeg } from "@engine/env/vegetation";
 const FARMHOUSE: HouseStyle = { wall: "#e9dcc0", shutter: "#3f5f7a", roof: "#8f97a8", timber: false };
 const BARN: HouseStyle = { wall: "#a5482f", shutter: "#efe2c4", roof: "#6d6560" };
 
-export function buildFarm(scene: THREE.Scene) {
+/** season "summer" (green crops) or "frost" (failed crops, frosted ground); built around `at` */
+export function buildFarm(scene: THREE.Scene, { season = "summer", at = V(0, 0, 0) }: { season?: "summer" | "frost"; at?: THREE.Vector3 } = {}) {
   const b = new Batch(), r = rng(1816);
-  b.add(new THREE.PlaneGeometry(600, 600).rotateX(-Math.PI / 2), lam("farmGrass", () => ({ map: rep(grassHD(), 90, 90) })));
+  const frost = season === "frost";
+  b.add(new THREE.PlaneGeometry(600, 600).rotateX(-Math.PI / 2), frost ? lam("farmGrassFrost", () => ({ map: rep(grassHD(), 90, 90), color: "#c9d3d6" })) : lam("farmGrass", () => ({ map: rep(grassHD(), 90, 90) })));
   house(b, -3.5, -12, 0.12, 8, 6.5, 4.6, FARMHOUSE);
   house(b, 9, -20, -0.35, 9, 8, 5.5, BARN);
   // fence: posts + two rails
@@ -21,9 +23,11 @@ export function buildFarm(scene: THREE.Scene) {
   for (const y of [0.45, 0.95]) b.add(boxGeo(V(-16, y, -4.03), V(16, y + 0.1, -3.97)), wood);
   // crop rows (summer green with golden tips), as small cone clumps
   const stalk = new THREE.ConeGeometry(0.09, 1, 5).translate(0, 0.5, 0);
-  const cropA = lam("cropA", () => ({ color: "#86a54a" })), cropB = lam("cropB", () => ({ color: "#a7b45a" }));
+  const cropA = frost ? lam("cropDead", () => ({ color: "#9c8a5e" })) : lam("cropA", () => ({ color: "#86a54a" }));
+  const cropB = frost ? lam("cropFrost", () => ({ color: "#d9dfe2" })) : lam("cropB", () => ({ color: "#a7b45a" }));
   for (let z = -6; z > -40; z -= 0.9) for (let x = 3; x < 40; x += 0.75) {
-    const h = 0.8 + r() * 0.4, m = new THREE.Matrix4().compose(V(x + r() * 0.3, 0, z + r() * 0.3), new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), (r() - 0.5) * 0.15), V(1, h, 1));
+    const h = (frost ? 0.45 + r() * 0.35 : 0.8 + r() * 0.4), m = new THREE.Matrix4().compose(V(x + r() * 0.3, 0, z + r() * 0.3), new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), (r() - 0.5) * 0.15), V(1, h, 1));
+    if (frost) m.multiply(new THREE.Matrix4().makeRotationZ((r() - 0.5) * 0.9)); // drooping, flattened stalks
     b.add(stalk, r() < 0.5 ? cropA : cropB, m);
   }
   for (let i = 0; i < 14; i++) addVeg(b, (["round", "fat", "tall", "round"] as const)[i % 4], -30 + r() * 22, 0, -8 - r() * 40, 4 + r() * 3, 77 + i);
@@ -34,5 +38,7 @@ export function buildFarm(scene: THREE.Scene) {
     const g = new THREE.SphereGeometry(1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     b.add(g, hill, new THREE.Matrix4().compose(V(-160 + i * 55 + r() * 20, -2, -150 - r() * 60), new THREE.Quaternion(), V(60 + r() * 40, 18 + r() * 16, 40)));
   }
-  b.build(scene);
+  const g = new THREE.Group(); g.position.copy(at); scene.add(g);
+  b.build(g);
+  return g;
 }

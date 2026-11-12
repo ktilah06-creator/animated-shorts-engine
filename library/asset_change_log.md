@@ -1,0 +1,5 @@
+- 2026-11-12  character/farmer-woman@1 approved: approved by the channel owner in review on 2026-11-12
+- 2026-11-12  character/farmer-man@1 approved: approved by the channel owner in review on 2026-11-12
+- 2026-11-12  character/child@1 approved: approved by the channel owner in review on 2026-11-12
+- 2026-11-12  data/natural-earth@1 approved: map data for globe scenes; public domain
+- 2026-11-12  font/fredoka@1 approved: label/title font; google/fonts commit 2e5fa2e

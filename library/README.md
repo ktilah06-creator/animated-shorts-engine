@@ -6,7 +6,7 @@ props, materials, textures, HDRIs, lighting and camera presets, animation patter
 ## Rules
 1. **Reuse first.** `node tools/asset.mjs search <words> [--type <type>]` searches approved assets and staging.
 2. **Then free sources.** Check the license on the asset's own page (sites mix licenses). Accepted: CC0-1.0,
-   CC-BY-3.0/4.0 (credit line required), MIT, Apache-2.0, BSD-3-Clause, Zlib, OFL-1.1, Original. Never NC or ND.
+   CC-BY-3.0/4.0 (credit line required), MIT, Apache-2.0, BSD-3-Clause, Zlib, OFL-1.1, Public-Domain, Original. Never NC or ND.
 3. **Create only when nothing fits**, and record it as `--kind original` (hand-written / procedural code) or
    `--kind generated --tool <what made it>`.
 4. **Approved versions never change.** Every file's sha256 is in `manifest.json`; builds, the render server and

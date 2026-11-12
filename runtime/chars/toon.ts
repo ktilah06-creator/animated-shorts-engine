@@ -48,6 +48,7 @@ export type Pose = {
   legL?: [number, number];       // [hip, knee]
   legR?: [number, number];
   flip?: boolean;
+  kneel?: number;                // 0 standing .. 1 kneeling on both knees (body drops by the shin length)
   shiver?: number;               // 0..1 cold shiver (tiny horizontal jitter, frame-driven by caller)
   hold?: (g: CanvasRenderingContext2D, hand: { x: number; y: number; a: number }, side: "L" | "R") => void;
   light?: { side: number; shade: string; amount: number }; // side -1/1 = which screen side is in shade
@@ -57,9 +58,9 @@ const EXPR: Record<Expression, { brow: [number, number]; mouth: Mouth; lid: numb
   neutral: { brow: [0, 0], mouth: "small", lid: 0, pupil: 1 },
   happy: { brow: [-6, 6], mouth: "smile", lid: 0.15, pupil: 1 },
   surprised: { brow: [-22, 0], mouth: "o", lid: -0.15, pupil: 0.8 },
-  worried: { brow: [-10, -16], mouth: "frown", lid: 0.05, pupil: 1 },
-  sad: { brow: [-4, -20], mouth: "frown", lid: 0.35, pupil: 1 },
-  cold: { brow: [-6, -10], mouth: "teeth", lid: 0.25, pupil: 1 },
+  worried: { brow: [-18, -2], mouth: "frown", lid: 0.05, pupil: 1 },
+  sad: { brow: [-20, 6], mouth: "frown", lid: 0.35, pupil: 1 },
+  cold: { brow: [-14, 2], mouth: "teeth", lid: 0.25, pupil: 1 },
   determined: { brow: [6, 14], mouth: "flat", lid: 0.2, pupil: 1 },
   awe: { brow: [-16, -4], mouth: "open", lid: -0.1, pupil: 0.9 },
 };
@@ -71,23 +72,38 @@ function shape(g: CanvasRenderingContext2D, fill: string, draw: () => void, lw =
   g.lineWidth = lw; g.strokeStyle = INK; g.lineJoin = "round"; g.lineCap = "round"; g.stroke();
 }
 
+/** continuous limb through three points (hip/shoulder, knee/elbow, end) with tapering width */
+function limbPts(g: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, w1: number, w2: number, col: string) {
+  const seg = (ax: number, ay: number, bx: number, by: number, wa: number, wb: number) => {
+    const ang = Math.atan2(by - ay, bx - ax), nx = -Math.sin(ang), ny = Math.cos(ang);
+    g.moveTo(ax + nx * wa, ay + ny * wa); g.lineTo(bx + nx * wb, by + ny * wb);
+    g.arc(bx, by, wb, ang + Math.PI / 2, ang - Math.PI / 2, true);
+    g.lineTo(ax - nx * wa, ay - ny * wa); g.arc(ax, ay, wa, ang - Math.PI / 2, ang + Math.PI / 2, true); g.closePath();
+  };
+  const path = () => { g.beginPath(); seg(x0, y0, x1, y1, w1, (w1 + w2) / 2); seg(x1, y1, x2, y2, (w1 + w2) / 2, w2); };
+  path(); g.lineWidth = 14; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke();
+  path(); g.fillStyle = col; g.fill("nonzero");
+}
+
 /** limb from (x,y) along angle a (deg from straight down, + toward `out`), two segments; returns end + angle */
 function limb(g: CanvasRenderingContext2D, x: number, y: number, a1: number, a2: number, l1: number, l2: number, w1: number, w2: number, out: number, col: string) {
   const A1 = rad(a1) * out, A2 = rad(a1 + a2) * out;
   const ex = x - Math.sin(-A1) * l1 * 1, ey = y + Math.cos(A1) * l1;
   const hx = ex + Math.sin(A2) * l2, hy = ey + Math.cos(A2) * l2;
+  // one continuous limb: both segments are outlined first (double width) and then filled on top, so the outline
+  // runs only around the outside and there is no line at the elbow / knee
   const seg = (ax: number, ay: number, bx: number, by: number, wa: number, wb: number) => {
     const ang = Math.atan2(by - ay, bx - ax), nx = -Math.sin(ang), ny = Math.cos(ang);
-    shape(g, col, () => {
-      g.moveTo(ax + nx * wa, ay + ny * wa);
-      g.lineTo(bx + nx * wb, by + ny * wb);
-      g.arc(bx, by, wb, ang + Math.PI / 2, ang - Math.PI / 2, true);
-      g.lineTo(ax - nx * wa, ay - ny * wa);
-      g.arc(ax, ay, wa, ang - Math.PI / 2, ang + Math.PI / 2, true);
-    });
+    g.moveTo(ax + nx * wa, ay + ny * wa);
+    g.lineTo(bx + nx * wb, by + ny * wb);
+    g.arc(bx, by, wb, ang + Math.PI / 2, ang - Math.PI / 2, true);
+    g.lineTo(ax - nx * wa, ay - ny * wa);
+    g.arc(ax, ay, wa, ang - Math.PI / 2, ang + Math.PI / 2, true);
+    g.closePath();
   };
-  seg(x, y, ex, ey, w1, (w1 + w2) / 2);
-  seg(ex, ey, hx, hy, (w1 + w2) / 2, w2);
+  const path = () => { g.beginPath(); seg(x, y, ex, ey, w1, (w1 + w2) / 2); seg(ex, ey, hx, hy, (w1 + w2) / 2, w2); };
+  path(); g.lineWidth = 14; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke();
+  path(); g.fillStyle = col; g.fill("nonzero");
   return { x: hx, y: hy, a: A2 };
 }
 
@@ -217,10 +233,32 @@ export function drawCharacter(g: CanvasRenderingContext2D, d: Design, p: Pose) {
   const female = d.bottom.kind === "skirt";
   // ---- legs / skirt
   const legW = 30;
+  const kn = Math.min(1, Math.max(0, p.kneel ?? 0));
+  if (kn > 0) g.translate(0, shin * kn);                          // the whole figure drops by the shin length
   const legs = (side: number, lp: [number, number] | undefined) => {
     const [a, k] = lp ?? [0, 0];
+    if (kn > 0.5) {
+      // kneeling on one knee, seen from the front: the screen-left knee is on the ground (boot sole behind it), the
+      // screen-right leg is raised: thigh out to the side, shin straight down to a planted boot
+      const gy = -shin * kn - 4;                                        // ground line after the drop
+      const col = d.bottom.kind === "trousers" ? d.bottom.color : d.stockings ?? "#5b4b45";
+      if (side < 0) {
+        g.save(); g.translate(-78, gy - 8);
+        shape(g, d.boots, () => { g.moveTo(22, -14); g.lineTo(-20, -20); g.quadraticCurveTo(-36, -4, -20, 10); g.lineTo(22, 10); g.closePath(); });
+        g.restore();
+        limbPts(g, -32, hipY, -40, (hipY + gy) / 2, -44, gy - 10, legW, legW - 2, col);
+        return { x: -44, y: gy, a: 0 };
+      }
+      const kx = 32 + thigh * 0.78, ky = hipY + thigh * 0.38;
+      limbPts(g, 32, hipY, kx, ky, kx + 6, gy - 20, legW, legW - 4, col);
+      g.save(); g.translate(kx + 6, gy - 20);
+      shape(g, d.boots, () => { g.moveTo(-22, -14); g.lineTo(-22, 20); g.quadraticCurveTo(40, 32, 44, 14); g.quadraticCurveTo(30, -8, 22, -14); g.closePath(); });
+      g.restore();
+      return { x: kx, y: gy, a: 0 };
+    }
     const e = limb(g, side * 32, hipY, a, -k, thigh, shin, legW, legW - 4, side, d.bottom.kind === "trousers" ? d.bottom.color : d.stockings ?? "#5b4b45");
     // boot
+    if (kn > 0.5) return e;
     g.save(); g.translate(e.x, e.y); g.rotate(-e.a * 0.6);
     shape(g, d.boots, () => { g.moveTo(-22, -34); g.lineTo(-22, 2); g.quadraticCurveTo(side * 40, 14, side * 44, -4); g.quadraticCurveTo(side * 30, -26, 22, -34); g.closePath(); });
     g.restore();

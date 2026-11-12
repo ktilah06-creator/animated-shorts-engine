@@ -1,1 +1,207 @@
-{ "schema": 1, "assets": {} }
+{
+  "schema": 1,
+  "assets": {
+    "character/child": {
+      "type": "character",
+      "name": "child",
+      "description": "1810s farm child: red cap, mustard shirt, blue trousers (scale 0.68)",
+      "tags": [
+        "child",
+        "kid",
+        "1800s",
+        "rural",
+        "historical"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/character/child/v001",
+          "entry": "design.ts",
+          "format": "ts",
+          "files": {
+            "design.ts": "7a26491692d0dd8289143424816e698e4208518e67721432135bdbd2ebbc5a2e"
+          },
+          "created": "2026-11-12",
+          "source": {
+            "kind": "original",
+            "creator": "Original design made with the channel's engine (runtime/chars/toon.ts)"
+          },
+          "license": {
+            "id": "Original",
+            "evidence": [],
+            "evidencePath": null
+          },
+          "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
+          "note": "approved by the channel owner in review on 2026-11-12",
+          "supersedes": null,
+          "usedBy": []
+        }
+      }
+    },
+    "character/farmer-man": {
+      "type": "character",
+      "name": "farmer-man",
+      "description": "1810s farmer: brown felt brim hat, trimmed beard, green waistcoat, cream shirt",
+      "tags": [
+        "farmer",
+        "man",
+        "1800s",
+        "rural",
+        "hat",
+        "beard",
+        "historical"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/character/farmer-man/v001",
+          "entry": "design.ts",
+          "format": "ts",
+          "files": {
+            "design.ts": "670617e2b5d8dba272a4b04fcd327d82e9f203d04cbab1fb616ee5d03ee8ff49"
+          },
+          "created": "2026-11-12",
+          "source": {
+            "kind": "original",
+            "creator": "Original design made with the channel's engine (runtime/chars/toon.ts)"
+          },
+          "license": {
+            "id": "Original",
+            "evidence": [],
+            "evidencePath": null
+          },
+          "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
+          "note": "approved by the channel owner in review on 2026-11-12",
+          "supersedes": null,
+          "usedBy": []
+        }
+      }
+    },
+    "character/farmer-woman": {
+      "type": "character",
+      "name": "farmer-woman",
+      "description": "1810s farm woman: bonnet with ribbon bow, blue dress, rust shawl, apron",
+      "tags": [
+        "farmer",
+        "woman",
+        "1800s",
+        "rural",
+        "bonnet",
+        "historical"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/character/farmer-woman/v001",
+          "entry": "design.ts",
+          "format": "ts",
+          "files": {
+            "design.ts": "5ea4d3e68d90f1fa45da4b40e5c3a47b28a86baf9cc20eae42120615fef88b69"
+          },
+          "created": "2026-11-12",
+          "source": {
+            "kind": "original",
+            "creator": "Original design made with the channel's engine (runtime/chars/toon.ts)"
+          },
+          "license": {
+            "id": "Original",
+            "evidence": [],
+            "evidencePath": null
+          },
+          "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
+          "note": "approved by the channel owner in review on 2026-11-12",
+          "supersedes": null,
+          "usedBy": []
+        }
+      }
+    },
+    "data/natural-earth": {
+      "type": "data",
+      "name": "natural-earth",
+      "description": "world land polygons (1:50m) and countries with continent field (1:110m), GeoJSON",
+      "tags": [
+        "map",
+        "world",
+        "globe",
+        "geography",
+        "countries",
+        "continents"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/data/natural-earth/v001",
+          "entry": null,
+          "format": "geojson",
+          "files": {
+            "ne_110m_admin_0_countries.geojson": "6866c877d39cba9c357620878839b336d569f8c662d3cfab4cb1dbe2d39c977f",
+            "ne_50m_land.geojson": "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b"
+          },
+          "created": "2026-11-12",
+          "source": {
+            "kind": "external",
+            "creator": "Natural Earth (Tom Patterson, Nathaniel Vaughn Kelso, NACIS volunteers)",
+            "url": "https://github.com/nvkelso/natural-earth-vector",
+            "retrieved": "2026-11-12"
+          },
+          "license": {
+            "id": "Public-Domain",
+            "url": "https://www.naturalearthdata.com/about/terms-of-use/",
+            "evidence": [
+              "LICENSE.md",
+              "terms-check.md"
+            ],
+            "evidencePath": "licenses/data/natural-earth/v001"
+          },
+          "modifications": "none (files as published)",
+          "note": "map data for globe scenes; public domain",
+          "supersedes": null,
+          "usedBy": []
+        }
+      }
+    },
+    "font/fredoka": {
+      "type": "font",
+      "name": "fredoka",
+      "description": "rounded friendly sans (variable weight/width) for labels and titles",
+      "tags": [
+        "font",
+        "rounded",
+        "sans",
+        "label",
+        "title"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/font/fredoka/v001",
+          "entry": "Fredoka-Variable.ttf",
+          "format": "ttf",
+          "files": {
+            "Fredoka-Variable.ttf": "2ba02e68b152868aef9ba28e24b3648c7d457fe6f25c761f2c2c53fb61a73fc8"
+          },
+          "created": "2026-11-12",
+          "source": {
+            "kind": "external",
+            "creator": "Milena Brandão, Hafontia (The Fredoka Project Authors)",
+            "url": "https://github.com/google/fonts/tree/main/ofl/fredoka",
+            "retrieved": "2026-11-12"
+          },
+          "license": {
+            "id": "OFL-1.1",
+            "url": "https://github.com/google/fonts/blob/main/ofl/fredoka/OFL.txt",
+            "evidence": [
+              "METADATA.pb",
+              "OFL.txt"
+            ],
+            "evidencePath": "licenses/font/fredoka/v001"
+          },
+          "modifications": "renamed file Fredoka[wdth,wght].ttf -> Fredoka-Variable.ttf; otherwise unchanged",
+          "note": "label/title font; google/fonts commit 2e5fa2e",
+          "supersedes": null,
+          "usedBy": []
+        }
+      }
+    }
+  }
+}
