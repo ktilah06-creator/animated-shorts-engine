@@ -160,5 +160,18 @@ export function mixGrade(a: GradeParams, b: GradeParams, t: number): GradeParams
   return { ky: m(a.ky, b.ky), sat: m(a.sat, b.sat) as GradeParams["sat"], tintS: m(a.tintS, b.tintS) as GradeParams["tintS"],
     tintM: m(a.tintM, b.tintM) as GradeParams["tintM"], tintH: m(a.tintH, b.tintH) as GradeParams["tintH"], vig: m(a.vig, b.vig) as GradeParams["vig"] };
 }
-export const GRADES: Record<string, GradeParams> = { neutral: GRADE_NEUTRAL, day: GRADE_DAY, golden: GRADE_GOLDEN, night: GRADE_NIGHT,
+/** cinematic: firmer S-curve, cool shadows, warm highlights, a little extra saturation in the mids */
+export const GRADE_CINE: GradeParams = {
+  ky: [0, 0.07, 0.21, 0.5, 0.8, 0.94, 1],
+  sat: [0.95, 1.08, 1.0],
+  tintS: [-0.012, 0.018], tintM: [0.004, -0.002], tintH: [0.012, -0.008],
+  vig: [0.15, 0.45],
+};
+export const GRADE_CINE_COLD: GradeParams = {
+  ky: [0, 0.07, 0.22, 0.5, 0.79, 0.93, 1],
+  sat: [0.85, 0.9, 0.9],
+  tintS: [-0.02, 0.025], tintM: [-0.008, 0.01], tintH: [-0.004, 0.006],
+  vig: [0.18, 0.42],
+};
+export const GRADES: Record<string, GradeParams> = { cine: GRADE_CINE, "cine-cold": GRADE_CINE_COLD, neutral: GRADE_NEUTRAL, day: GRADE_DAY, golden: GRADE_GOLDEN, night: GRADE_NIGHT,
   summer: GRADE_DAY, overcast: GRADE_COLD, cold: GRADE_COLD };

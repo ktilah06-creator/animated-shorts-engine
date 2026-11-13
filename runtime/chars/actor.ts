@@ -57,6 +57,12 @@ export class Actor {
   }
 
   /** draw the pose and face the camera; rig (optional) supplies light colour and sun side */
+  /** cinematic scenes: light the card from a CineRig-style setup (tint = light colour on the card, side/amount = shade band) */
+  light(tint: THREE.ColorRepresentation, sunDir: THREE.Vector3, cam: THREE.Camera, shade = "rgb(60,64,90)", amount = 0.35) {
+    this.mat.color.set(tint);
+    this.w.setFromMatrixColumn(cam.matrixWorld, 0);
+    return { side: this.w.dot(sunDir) >= 0 ? -1 : 1, shade, amount };
+  }
   update(pose: Pose, cam: THREE.Camera, rig?: LightRig, sunDir?: THREE.Vector3) {
     const s = this.design.scale ?? 1;
     this.root.updateMatrixWorld();
@@ -81,8 +87,8 @@ export class Actor {
     this.tex.needsUpdate = true;
     this.card.scale.setScalar(s);
     this.shadowCard.scale.setScalar(s);
-    if (rig) {
-      const sd = sunDir ?? rig.sun.position.clone().sub(rig.sun.target.position).normalize();
+    if (rig || sunDir) {
+      const sd = sunDir ?? rig!.sun.position.clone().sub(rig!.sun.target.position).normalize();
       this.shadowCard.rotation.set(0, Math.atan2(sd.x, sd.z) - this.root.rotation.y, 0);
     }
     this.blob.scale.set(this.height * 0.42 * s, this.height * 0.18 * s, 1);
