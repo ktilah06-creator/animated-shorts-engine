@@ -6,7 +6,7 @@ origin: runtime/post/ink.ts, runtime/post/lensblur.ts, runtime/post/grade.ts, ru
 runtime/look/lights.ts, runtime/look/rig.ts (generalised from world.ts), runtime/look/paint.ts,
 runtime/look/materials.ts, runtime/look/water.ts, runtime/look/clouds.ts, runtime/env/geo.ts, runtime/env/strand.ts,
 runtime/env/sight.ts, runtime/env/vegetation.ts, runtime/env/house.ts, runtime/env/banner.ts, runtime/env/kit.ts,
-qa/short_qa.py, qa/sbs_sheet.py.
+qa/short_qa.py, qa/sbs_sheet.py, audio/dsp.py, audio/instruments.py, audio/sfx_gen.py.
 Only code is reused. The repository's story, characters, reference frames and reference reports are not used.
 
 ```

@@ -5,6 +5,8 @@
 //   node engine/cli.mjs stills  <film> <f1,f2,..> [--scale 0.5] [--post '{"ink":false}']
 //   node engine/cli.mjs render  <film> [--preview] [--only s1,s2] [--audio file.wav] [--scale x] [--crf n]
 //   node engine/cli.mjs cues    <film> <audio> [script.txt]          optional timing cues -> videos/<film>/cues.json
+//   node engine/cli.mjs timeline <film>                        shots, flashes, sound events -> out/<film>/timeline.json
+//   node engine/cli.mjs sound   <film> [--voice file]            run videos/<film>/sound.py (music + sfx + final mix)
 //   node engine/cli.mjs qa      <video.mp4> [--film <film>]       frame-by-frame technical QA (qa/short_qa.py)
 //   node engine/cli.mjs selftest                                 engine checks (bundle, determinism, cache, concat)
 import path from "node:path";
@@ -57,6 +59,21 @@ async function main() {
       for (const s of j.sentences ?? []) console.log(`  ${s.t0.toFixed(2).padStart(6)}-${s.t1.toFixed(2).padStart(6)}  ${s.text}`);
       break;
     }
+    case "timeline": case "sound": {
+      const { openFilm } = await import("./render.mjs");
+      const f = await openFilm(pos[0], { scale: 0.25, log: () => {} });
+      await f.close();
+      const dir = path.join(P.out, pos[0]); fs.mkdirSync(dir, { recursive: true });
+      const tl = path.join(dir, "timeline.json");
+      fs.writeFileSync(tl, JSON.stringify({ id: f.meta.id, fps: f.meta.fps, frames: f.meta.frames, shots: f.meta.shots, flashes: f.meta.flashes, sound: f.meta.sound }, null, 1) + "\n");
+      console.log(`wrote ${path.relative(P.root, tl)}: ${f.meta.shots.length} shots, ${f.meta.sound.length} sound events`);
+      if (cmd === "sound") {
+        const script = path.join(P.videos, pos[0], "sound.py");
+        const voice = flags.voice ?? fs.readdirSync(path.join(P.videos, pos[0], "public")).filter((x) => /^vo\./.test(x)).map((x) => path.join(P.videos, pos[0], "public", x))[0];
+        execFileSync(python, [script, tl, dir, voice ?? ""], { stdio: "inherit", env: { ...process.env, PYTHONPATH: path.join(P.root, "audio") } });
+      }
+      break;
+    }
     case "qa": {
       const video = pos[0];
       const outDir = flags.out ?? path.join(path.dirname(video), "qa");
@@ -70,7 +87,7 @@ async function main() {
       break;
     }
     default:
-      console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 10).join("\n").replace(/^\/\/ ?/gm, ""));
+      console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 12).join("\n").replace(/^\/\/ ?/gm, ""));
       process.exitCode = cmd ? 1 : 0;
   }
 }

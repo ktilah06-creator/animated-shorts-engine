@@ -34,7 +34,9 @@
           "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
           "note": "approved by the channel owner in review on 2026-11-12",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -73,7 +75,9 @@
           "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
           "note": "approved by the channel owner in review on 2026-11-12",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -111,7 +115,9 @@
           "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
           "note": "approved by the channel owner in review on 2026-11-12",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -156,7 +162,9 @@
           "modifications": "none (files as published)",
           "note": "map data for globe scenes; public domain",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -220,7 +228,9 @@
           "modifications": "v2: animation controls (columnAge: column grows from the vent; cloud: ash cloud fade-in); look unchanged from v1",
           "note": "animation controls for the tambora-1816 film",
           "supersedes": 1,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -261,7 +271,9 @@
           "modifications": "v1: approved in review 1-2 (2026-11-13)",
           "note": "approved by the channel owner (reviews 1 and 2)",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -301,7 +313,9 @@
           "modifications": "v1: approved in review 1-2 (2026-11-13)",
           "note": "approved by the channel owner (reviews 1 and 2)",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -344,7 +358,9 @@
           "modifications": "renamed file Fredoka[wdth,wght].ttf -> Fredoka-Variable.ttf; otherwise unchanged",
           "note": "label/title font; google/fonts commit 2e5fa2e",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     }

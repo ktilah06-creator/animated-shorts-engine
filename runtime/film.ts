@@ -56,11 +56,14 @@ export type FilmDef = {
   background?: string;               // page colour behind everything (visible only if a layer is transparent)
   shots: ShotDef[];
   flashes?: { at: number; len: number; color?: string; curve?: number[] }[];
+  /** sound events in frames (picked up by the film's sound script via `cli timeline` / `cli sound`) */
+  sound?: SoundEvent[];
   post?: Partial<PostOptions>;
   camera?: { fov?: number; near?: number; far?: number };
   setup(ctx: Ctx): Promise<Stage> | Stage;
 };
 
+export type SoundEvent = { f: number; kind: string; gain?: number; pan?: number; dur?: number; [k: string]: unknown };
 export const defineFilm = (f: FilmDef): FilmDef => f;
 
 /** Everything a film can use during setup and per frame. */
@@ -93,7 +96,7 @@ export function rng(seed: number) {
 }
 
 // ---------------------------------------------------------------- boot
-type Meta = { id: string; fps: number; width: number; height: number; frames: number; shots: ShotDef[]; flashes: { at: number; len: number }[] };
+type Meta = { id: string; fps: number; width: number; height: number; frames: number; shots: ShotDef[]; flashes: { at: number; len: number }[]; sound: SoundEvent[] };
 
 declare global {
   interface Window {
@@ -259,7 +262,7 @@ async function start(film: FilmDef) {
     renderer.getContext().finish();
   };
 
-  const meta: Meta = { id: film.id, fps, width, height, frames, shots, flashes: (film.flashes ?? []).map((x) => ({ at: x.at, len: x.len })) };
+  const meta: Meta = { id: film.id, fps, width, height, frames, shots, flashes: (film.flashes ?? []).map((x) => ({ at: x.at, len: x.len })), sound: (film.sound ?? []).slice().sort((a, b) => a.f - b.f) };
   window.__engine!.meta = meta;
   return { meta, frame };
 }

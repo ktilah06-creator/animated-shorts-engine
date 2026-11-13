@@ -77,6 +77,36 @@ const cam = camPath([
   { f: T.hardship, pose: (f) => rel(VIL, { pos: [1.2 + (f - T.hardship) * 0.002, 1.5, 4.2 - (f - T.hardship) * 0.004], look: [-3.0, 1.35, -3.2], fov: 50 }), cut: true },
   { f: T.title, pose: (f) => ({ pos: [2.6, 1.0 + (f - T.title) * 0.004, 7.5], look: [-0.4, 2.6 + (f - T.title) * 0.006, -4], fov: 46 }), cut: true },
 ]);
+// ---------------------------------------------------------------- sound events (frames; rendered by sound.py)
+const bed = (kind: string, a: number, b: number, gain = 1) => ({ f: a, kind, dur: (b - a) / FPS, gain });
+const ev = (kind: string, f: number, gain = 1, extra: Record<string, unknown> = {}) => ({ f, kind, gain, ...extra });
+const SOUND = [
+  bed("birds", 0, T.snow + 10, 0.8), bed("breeze", 0, T.y1816, 0.6), bed("hush", T.snow, T.y1816 + 6, 0.8), ev("sparkle", T.snow + 4, 0.7),
+  ev("whoosh", T.y1816 - 6, 0.7), bed("space", T.y1816, T.tambora + 6, 0.7),
+  ev("pop", W("1816,", T.y1816) - 2, 0.7), ev("pop", W("North", T.y1816) - 2, 0.6, { pitch: 1.12 }), ev("pop", W("Europe", T.y1816) - 2, 0.6, { pitch: 1.25 }),
+  ev("whoosh", T.away, 0.6, { dur: 1.6 }), ev("pop", T.away + 6, 0.6, { pitch: 0.8 }),
+  ...Array.from({ length: 11 }, (_, i) => ev("tick", T.away + 25 + i * 5, 0.35, { pitch: 1 + i * 0.04 })),
+  ev("whoosh", T.tambora - 6, 0.7), bed("waves", T.tambora, T.so2 + 6, 0.8), bed("rumble", T.tambora + 30, T.unleashed + 4, 0.35),
+  ev("pop", W("Mount", T.tambora) - 4, 0.6), ev("boom", T.unleashed, 1.0), bed("rumble", T.unleashed, T.so2 + 30, 1.0),
+  ev("whoosh", T.so2 - 6, 0.7), bed("rumble", T.so2, T.less, 0.35),
+  ev("pop", T.so2 + 8, 0.45), ev("pop", T.so2 + 14, 0.45, { pitch: 0.9 }), ev("pop", W("sulfur", T.so2) - 4, 0.6),
+  ev("pop", W("sulfate", T.aerosols) - 2, 0.6, { pitch: 1.15 }), ev("airy", T.transformed, 0.6, { dur: 3.5 }), ev("pop", T.transformed + 10, 0.4),
+  ev("zip", T.reflected - 38, 0.5), ev("zip", T.reflected - 32, 0.5), ev("zip", T.reflected - 26, 0.5), ev("pop", T.reflected - 36, 0.4),
+  ev("zip", T.reflected - 14, 0.55, { up: 1 }), ev("ting", T.reflected - 2, 0.5), ev("pop", T.reflected + 4, 0.45),
+  ev("zip", T.reflected - 6, 0.35), ev("zip", T.reflected, 0.35), ev("pop", T.reflected + 40, 0.4, { pitch: 0.85 }),
+  ev("whoosh", T.less - 6, 0.6), bed("wind", T.less, T.north + 6, 0.55),
+  ...Array.from({ length: 12 }, (_, i) => ev("tick", T.temps - 4 + i * 4, 0.35, { pitch: 1.3 - i * 0.05 })),
+  ev("whoosh", T.north - 6, 0.6), bed("space", T.north, T.cold + 6, 0.7), ev("sparkle", W("Northern", T.north), 0.5, { pitch: 0.8 }), ev("pop", W("Northern", T.north) - 2, 0.6),
+  ev("whoosh", T.cold - 6, 0.6), bed("wind", T.cold, T.hardship, 0.8), bed("murmur", T.cold, T.rain, 0.5), ev("pop", T.cold + 4, 0.6),
+  bed("rain", T.rain - 6, T.snowfall - 10, 1.0), bed("hush", T.snowfall - 14, T.hardship, 0.7),
+  ev("thud", T.harvests + 6, 0.6),
+  bed("rain", T.hardship, T.conseq + 6, 0.55), bed("murmur", T.hardship, T.conseq, 0.55), ev("clack", T.prices - 40, 0.6), ev("clack", T.prices + 8, 0.7),
+  ev("whoosh", T.conseq - 6, 0.6), bed("space", T.conseq, T.title + 6, 0.7), ev("pop", T.conseq + 8, 0.5, { pitch: 0.8 }),
+  ...Array.from({ length: 14 }, (_, i) => ev("tick", T.conseq + 12 + i * 6, 0.3, { pitch: 1 + i * 0.03 })), ev("airy", T.conseq + 30, 0.5, { dur: 4 }),
+  ev("whoosh", T.title - 6, 0.6), bed("hush", T.title, T.last + 6, 0.8), bed("wind", T.title, T.last + 6, 0.4), ev("chime", T.title + 4, 0.8), ev("pop", T.title + 14, 0.5),
+  ev("whoosh", T.last - 8, 0.5), bed("space", T.last, END, 0.7),
+];
+
 // globe shots: camera fixed, the globe turns
 const GLOBE_CAM: CamPose = rel(GLOBE, { pos: [0, 0.3, 19], look: [0, 0.3, 0], fov: 36 });
 
@@ -84,6 +114,7 @@ export default defineFilm({
   id: "tambora-1816",
   shots,
   flashes: [{ at: T.unleashed, len: 7, curve: [1, 0.85, 0.6, 0.4, 0.22, 0.1, 0.03] }, { at: END - 14, len: 14, color: "#05070f", curve: Array.from({ length: 14 }, (_, k) => smootherstep((k + 1) / 14)) }],
+  sound: SOUND,
   camera: { far: 9000 },
   async setup(ctx) {
     await loadFont(ctx, "font/fredoka", 1, "Fredoka-Variable.ttf", "Fredoka");

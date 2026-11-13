@@ -3,7 +3,7 @@
 Reusable engine for hybrid 2D/3D animated vertical shorts. A film is a TypeScript module that builds a three.js
 world and poses it per frame; the engine renders it deterministically in headless Chrome and encodes it with ffmpeg.
 
-Status: **engine core + visual components**. Character system, overlays, sound and the technical demo follow.
+Status: engine, visual components, characters, overlays, sound; first film in production (videos/tambora-1816).
 
 ## Requirements
 - Node 20+, ffmpeg/ffprobe, Python 3 with numpy + Pillow (QA), git.
@@ -18,6 +18,8 @@ node engine/cli.mjs stills  <film> 10,45,90         # full-size JPEG stills -> o
 node engine/cli.mjs render  <film> --preview        # half size, no MSAA -> out/<film>/<film>_preview_video.mp4
 node engine/cli.mjs render  <film> --audio mix.wav  # final 1080x1920 30 fps H.264 (+ AAC 48 kHz)
 node engine/cli.mjs render  <film> --only s3,s4     # force these shots; unchanged shots come from cache/
+node engine/cli.mjs cues    <film> <audio> [script.txt]  # optional timing cues (sentences, words) from the voice-over
+node engine/cli.mjs sound   <film>                  # score + SFX (videos/<film>/sound.py) + final mix -> out/<film>/mix.wav
 node engine/cli.mjs qa      out/<film>/<file>.mp4 --film <film>   # frame-by-frame QA + contact sheets
 node engine/cli.mjs selftest                        # engine checks (determinism, cache, concat, audio, library)
 node tools/asset.mjs search lantern                 # asset library (see library/README.md)
@@ -78,6 +80,8 @@ runtime/   browser side
                 culling), vegetation, house (gabled house generator), banner, kit (GLB kits from the library)
 library/   approved assets (immutable versions), manifest, licenses, credits
 tools/     asset.mjs (library CLI)
+audio/     dsp, instruments, sfx_gen (ported, MIT), fx.py (engine SFX), mixer.py (voice + ducked music + SFX ->
+           -14 LUFS, true peak <= -1 dBTP, exact length)
 qa/        short_qa.py (frame-by-frame QA), sbs_sheet.py (side-by-side sheets)
 videos/    one folder per film (videos/_selftest and videos/_looktest are engine tests)
 ```
