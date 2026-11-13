@@ -22,3 +22,8 @@ Decisions so far
   bigger eruption, clearer SO2 -> aerosol -> reflection science, more varied shots, title held 2-3 s to the end,
   61-80 s. Done for review 4: VO pauses tightened to 78.4 s (words untouched), eight style frames
   (videos/tambora-v2-frames). Market board shows a rising price without numbers (script says only "rising prices").
+- 2026-11-13 review 4 approved (chat): cinematic direction approved for the full video, with six refinements (wider
+  mushroom + visible island/sea, SO2 oxidation step, scattering instead of mirror, farmer integration, price arrow,
+  title contrast) -> done. Film rebuilt as 16 shots on vo_tight.wav (79.7 s, title held to the last frame);
+  low-res preview v3: out/tambora-1816/tambora-1816_preview_v3.mp4. Engine fixes found while rendering: negative
+  umbrella alpha, Sky.js NaN poisoning the PMREM environment.
