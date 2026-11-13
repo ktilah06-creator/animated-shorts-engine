@@ -6,6 +6,7 @@ import { grassHD, rep } from "@engine/look/paint";
 import { V, Batch, boxGeo } from "@engine/env/geo";
 import { house, type HouseStyle } from "@engine/env/house";
 import { addVeg } from "@engine/env/vegetation";
+import { NOINK } from "@engine/post/ink";
 
 const FARMHOUSE: HouseStyle = { wall: "#e9dcc0", shutter: "#3f5f7a", roof: "#8f97a8", timber: false };
 const BARN: HouseStyle = { wall: "#a5482f", shutter: "#efe2c4", roof: "#6d6560" };
@@ -40,5 +41,41 @@ export function buildFarm(scene: THREE.Scene, { season = "summer", at = V(0, 0, 
   }
   const g = new THREE.Group(); g.position.copy(at); scene.add(g);
   b.build(g);
+  return g;
+}
+
+/**
+ * A dense patch of wheat around a point (for close shots): stalks with heads, summer gold-green or frost-killed
+ * (brown, drooping, some flattened, frost-white tips). `clear` keeps a circle free around the centre (for a character).
+ */
+export function cropPatch(scene: THREE.Scene, center: THREE.Vector3, { w = 7, d = 7, frost = true, clear = 0.55, seed = 7, height = 0.55 } = {}) {
+  const b = new Batch(), r = rng(seed);
+  const stalk = new THREE.CylinderGeometry(0.006, 0.009, 1, 4).translate(0, 0.5, 0);
+  const head = new THREE.SphereGeometry(1, 8, 6).scale(0.016, 0.055, 0.016);
+  const awn = new THREE.CylinderGeometry(0.002, 0.002, 0.07, 3).translate(0, 0.035, 0);
+  const leaf = new THREE.PlaneGeometry(0.03, 0.26).translate(0, 0.13, 0);
+  const cS = lam(frost ? "wheatStalkDead" : "wheatStalk", () => ({ color: frost ? "#d2b77a" : "#9fb055" }));
+  const cH = lam(frost ? "wheatHeadDead" : "wheatHead", () => ({ color: frost ? "#b8925a" : "#d9b45a" }));
+  const cF = lam("wheatFrostTip", () => ({ color: "#e8eef2" }));
+  const cL = lam(frost ? "wheatLeafDead" : "wheatLeaf", () => ({ color: frost ? "#8f8052" : "#7fa046", side: THREE.DoubleSide }));
+  for (let z = -d / 2; z < d / 2; z += 0.1) for (let x = -w / 2; x < w / 2; x += 0.09) {
+    const px = x + (r() - 0.5) * 0.1, pz = z + (r() - 0.5) * 0.1;
+    if (Math.hypot(px, pz) < clear + r() * 0.15) continue;
+    const h = (frost ? height : height + 0.3) + r() * 0.3;
+    // dead wheat leans and droops; a few stalks lie almost flat
+    const lean = frost ? (r() < 0.12 ? 1.25 : 0.15 + r() * 0.45) : r() * 0.12;
+    const yaw = r() * Math.PI * 2;
+    const base = new THREE.Matrix4().compose(V(center.x + px, center.y, center.z + pz), new THREE.Quaternion().setFromEuler(new THREE.Euler(lean, yaw, 0, "YXZ")), V(1, 1, 1));
+    b.add(stalk, cS, base.clone().multiply(new THREE.Matrix4().makeScale(1, h, 1)));
+    const droop = frost ? 0.9 + r() * 0.6 : 0.2;   // the head hangs over at the top
+    const top = base.clone().multiply(new THREE.Matrix4().makeTranslation(0, h, 0)).multiply(new THREE.Matrix4().makeRotationX(droop)).multiply(new THREE.Matrix4().makeTranslation(0, 0.09, 0));
+    b.add(head, cH, top);
+    for (const ax of [-0.25, 0, 0.25]) b.add(awn, cH, top.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.045, 0)).multiply(new THREE.Matrix4().makeRotationZ(ax)));
+    if (frost && r() < 0.5) b.add(head, cF, top.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.05, 0.012)).multiply(new THREE.Matrix4().makeScale(0.8, 0.45, 0.8)));
+    if (r() < 0.6) b.add(leaf, cL, base.clone().multiply(new THREE.Matrix4().makeTranslation(0, h * (0.3 + r() * 0.3), 0)).multiply(new THREE.Matrix4().makeRotationZ((r() - 0.5) * 2.2)));
+  }
+  const g = new THREE.Group(); scene.add(g); b.build(g);
+  // thin stalks would turn into a mass of ink lines: the patch opts out of world outlines
+  g.traverse((o) => o.layers.set(NOINK));
   return g;
 }
