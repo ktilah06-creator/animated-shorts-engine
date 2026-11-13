@@ -96,6 +96,7 @@ export default defineFilm({
       strat: new Label(ctx, "STRATOSPHERE", { style: "doc", size: 32, accent: "#6fa2d8" }), trop: new Label(ctx, "TROPOSPHERE", { style: "doc", size: 32, accent: "#9cc3e6" }),
       inc: new Label(ctx, "Incoming sunlight", { style: "doc", accent: "#ffc94a" }), refl: new Label(ctx, "Reflected back to space", { style: "doc", accent: "#ffc94a" }),
       less: new Label(ctx, "Less sunlight reaches the surface", { style: "doc", accent: "#e2553f" }),
+      volc: new Label(ctx, "Magma chamber", { style: "doc", size: 28, accent: "#e2553f" }), cone: new Label(ctx, "Mount Tambora", { style: "doc", size: 30, accent: "#e2553f" }), ground: new Label(ctx, "Ground", { style: "doc", size: 30, accent: "#4c8a36" }),
       tam: new Label(ctx, "Mount Tambora", { style: "doc", sub: "Sumbawa, Indonesia · April 1815", size: 46, accent: "#e2553f" }),
       title: new Label(ctx, "THE YEAR\nWITHOUT A SUMMER", { style: "cine-title", size: 64 }), year: new Label(ctx, "1816", { style: "cine-sub", size: 52 }),
     };
@@ -135,7 +136,7 @@ export default defineFilm({
           return { exposure: st.exposure, grade: "cine", cInf: 0, focus: vent, sun: st.sunWorld, godrays: 0.7 };
         }
         if (shot.id === "science-gas" || shot.id === "science-light") {
-          applyCam(c, { pos: [SCI.x + 7, SCI.y + 16.5, SCI.z + 44], look: [SCI.x + 0.5, SCI.y + 16.5, SCI.z], fov: 44 });
+          applyCam(c, { pos: [SCI.x + 7, SCI.y + 13.2, SCI.z + 46], look: [SCI.x + 0.5, SCI.y + 13.2, SCI.z], fov: 50 });
           c.far = 2000; c.updateProjectionMatrix();
           const st = cine.apply("cine-summer", c, { focus: SCI.clone().add(V(0, 3, 0)), radius: 30 });
           scene.fog = null;
@@ -143,6 +144,7 @@ export default defineFilm({
           sci.update(gas ? { gas: 0.92, convert: 0.12, spread: 0, rays: 0, t: 3 } : { gas: 1, convert: 1, spread: 1, rays: 1, t: 6 });
           const A = sci.anchors;
           L.strat.update(5, { at: A.strat, ...lt(c) }); L.trop.update(5, { at: A.trop, ...lt(c) });
+          L.cone.update(5, { at: A.cone, ...lt(c) }); L.ground.update(5, { at: A.ground, ...lt(c) });
           if (gas) { L.so2.update(5, { at: A.so2, ...lt(c) }); inset.update(30, { from: 0, to: 100 }); }
           else { L.aer.update(5, { at: A.aer, ...lt(c) }); L.inc.update(5, { at: A.inc, ...lt(c) }); L.refl.update(5, { at: A.refl, ...lt(c) }); L.less.update(5, { at: A.less, ...lt(c) }); }
           return { exposure: st.exposure, grade: "cine" };

@@ -43,7 +43,7 @@ export function buildScience(scene: THREE.Scene, at: THREE.Vector3) {
   bgm.layers.set(NOINK); root.add(bgm);
   root.add(dashedLine(V(-30, TROPO, 3.2), V(30, TROPO, 3.2), { dash: 0.9, gap: 0.5, width: 0.12, color: "#22324a" }));
   // land slice: terrain on top of a cut face with soil and rock layers
-  const prof = (x: number) => 1.6 + 0.4 * Math.sin(x * 0.5) + 0.2 * Math.sin(x * 1.7) + 7.2 * Math.exp(-sq((x + 6) / 2.6)) - 1.1 * Math.exp(-sq((x + 6) / 0.55));
+  const prof = (x: number) => 1.6 + 0.4 * Math.sin(x * 0.5) + 0.2 * Math.sin(x * 1.7) + 7.6 * Math.exp(-sq((x + 6) / 2.5)) - 0.9 * Math.exp(-sq((x + 6) / 0.4));
   const top = new THREE.Shape(); top.moveTo(-40, -2);
   for (let x = -40; x <= 40; x += 0.25) top.lineTo(x, prof(x));
   top.lineTo(40, -2); top.closePath();
@@ -59,6 +59,33 @@ export function buildScience(scene: THREE.Scene, at: THREE.Vector3) {
   const land = new THREE.Mesh(slab, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, normalMap: pbr("ground").normalMap, normalScale: new THREE.Vector2(0.6, 0.6) }));
   land.castShadow = true; land.receiveShadow = true; root.add(land);
   const vent = V(-6, prof(-6) + 0.2, 0);
+  // cut face drawn as a geological cross-section: grass, soil and rock bands; a dark volcanic cone with its conduit
+  // running down to the magma chamber (makes "land" and "volcano" unmistakable)
+  const band = (f: (x: number) => number, g: (x: number) => number, color: string, z: number, x0 = -40, x1 = 40) => {
+    const sh = new THREE.Shape(); sh.moveTo(x0, f(x0));
+    for (let x = x0; x <= x1 + 1e-6; x += 0.2) sh.lineTo(x, f(x));
+    for (let x = x1; x >= x0 - 1e-6; x -= 0.2) sh.lineTo(x, g(x));
+    sh.closePath();
+    const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), new THREE.MeshStandardMaterial({ color, roughness: 0.95 }));
+    m.position.z = z; root.add(m); return m;
+  };
+  const coneW = (x: number) => Math.exp(-sq((x + 6) / 2.5));
+  const FZ = 3.01, BOT = -9;
+  band(prof, (x) => prof(x) - 0.22, "#4c8a36", FZ);                                   // grass
+  band((x) => prof(x) - 0.22, (x) => prof(x) - 1.6, "#7a5634", FZ);                 // soil
+  band((x) => prof(x) - 1.6, () => BOT, "#6d6964", FZ);                             // bedrock
+  band((x) => prof(x) - 0.25 * (1 - Math.min(1, coneW(x) * 1.4)), (x) => prof(x) - 0.25 - 6.5 * Math.min(1, coneW(x) * 1.4), "#3b302c", FZ + 0.005, -13, 1);   // volcanic rock of the cone, fading into the layers
+  const chamber = new THREE.Mesh(new THREE.CircleGeometry(1, 40), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.3, 0.22, 0.04), fog: false }));
+  chamber.scale.set(2.2, 0.9, 1); chamber.position.set(-6, -3.3, FZ + 0.01); root.add(chamber);
+  band((x) => -3.0, (x) => prof(-6) - 0.9, "#000", FZ + 0.012, -6.18, -5.82).material = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.3, 0.3, 0.05), fog: false });
+  // a few trees on the land so it reads as countryside at a glance
+  const treeMat = new THREE.MeshStandardMaterial({ color: "#2f6b2a", roughness: 0.9 }), trunkMat = new THREE.MeshStandardMaterial({ color: "#5a3d26" });
+  for (const x of [3.2, 4.1, 7.6, 8.4, 12.5, 13.3, 16.8, -16.5, -15.6]) {
+    const y = prof(x), t = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.5, 6), trunkMat); trunk.position.y = 0.25;
+    const crown = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.2, 8), treeMat); crown.position.y = 1.0;
+    t.add(trunk, crown); t.position.set(x, y - 0.05, 1.8 - (x % 2) * 0.6); t.scale.setScalar(0.9 + (Math.abs(x) % 1) * 0.4); root.add(t);
+  }
   // particles: SO2 gas (yellow) and sulfate aerosol droplets (white); the same particle changes from one to the other
   const N = 1400, pos = new Float32Array(N * 3), colr = new Float32Array(N * 3);
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.BufferAttribute(colr, 3));
@@ -89,7 +116,8 @@ export function buildScience(scene: THREE.Scene, at: THREE.Vector3) {
     root, vent: vent.clone().add(at),
     anchors: {
       so2: at.clone().add(V(-2.2, 11, 2)), aer: at.clone().add(V(4.2, LAYER + 2.4, 2)), strat: at.clone().add(V(-7.5, 16.6, 2)), trop: at.clone().add(V(-7.2, 13.4, 2)),
-      inc: at.clone().add(V(7.2, 30.5, 2)), refl: at.clone().add(V(-3.6, 28.2, 2)), less: at.clone().add(V(4.5, 5.6, 2)),
+      inc: at.clone().add(V(8.4, 31.2, 2)), refl: at.clone().add(V(-6, 26.4, 2)), less: at.clone().add(V(6.5, 8.6, 2)),
+      volc: at.clone().add(V(-6, -7.8, 3.2)), cone: at.clone().add(V(-12.5, 5.4, 3.2)), ground: at.clone().add(V(9.5, 0.2, 3.2)),
     },
     /** gas 0..1 (column rising), convert 0..1 (gas -> droplets), spread 0..1 (layer downwind), rays 0..1 (sunlight on), t seconds */
     update({ gas = 1, convert = 1, spread = 1, rays = 1, t = 0 }) {
