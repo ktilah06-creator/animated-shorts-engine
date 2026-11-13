@@ -22,6 +22,9 @@ export class Clouds {
     }
   }
   private pal(p: Pal) {
+    // blended presets give a new colour every frame: snap to 16 levels per channel so only a few textures are painted
+    const q = (h: string) => "#" + new THREE.Color(h).toArray().map((v) => Math.round(Math.round(v * 15) / 15 * 255).toString(16).padStart(2, "0")).join("");
+    p = { lit: q(p.lit), mid: q(p.mid), shade: q(p.shade) };
     const k = p.lit + p.mid + p.shade;
     let t = this.maps.get(k);
     if (!t) { t = [0, 1, 2, 3].map((s) => cloudHD(s, p)); this.maps.set(k, t); }

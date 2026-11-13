@@ -70,7 +70,7 @@ const cam = camPath([
   { f: T.snow, pose: { pos: [1.1, 0.55, 3.6], look: [-0.2, 2.3, -1.5], fov: 46 }, cut: true, creep: 0.25 },
   { f: T.tambora, pose: (f) => rel(VOLC, { pos: [78 - (f - T.tambora) * 0.025, 3.4, 98 - (f - T.tambora) * 0.035], look: [0, 30, 0], fov: 46 }), cut: true },
   { f: T.so2, pose: (f) => rel(ATM, { pos: [ATMOS_CAM.pos[0], ATMOS_CAM.pos[1], ATMOS_CAM.pos[2] - (f - T.so2) * 0.004], look: ATMOS_CAM.look, fov: ATMOS_CAM.fov }), cut: true },
-  { f: T.less, pose: { pos: [2.2, 1.2, 5.4], look: [-0.2, 1.9, -2], fov: 44 }, cut: true, creep: 0.2 },
+  { f: T.less, pose: { pos: [1.7, 1.3, 6.4], look: [-0.25, 1.65, -1.5], fov: 44 }, cut: true, creep: 0.07 },
   { f: T.cold, pose: (f) => rel(VIL, { pos: [1.4 - (f - T.cold) * 0.004, 1.55, 4.6], look: [-2.6, 1.35, -2.8], fov: 48 }), cut: true },
   { f: T.rain - 6, pose: (f) => rel(VIL, { pos: [3.2, 2.6 - (f - T.rain) * 0.003, 9], look: [-1, 1.6, -6], fov: 46 }), cut: true },
   { f: T.snowfall - 14, pose: { pos: [4.5, 1.1, 2.2], look: [8, 1.1, -10], fov: 42 }, cut: true, creep: 0.4 },
@@ -191,7 +191,7 @@ export default defineFilm({
         // ------------------------------------------------ farm (summer, dimming, summer snow, title)
         if (set === "farm") {
           const id = shot.id;
-          applyCam(c, cam(f));
+          applyCam(c, cam(f, shot.a));
           let P = mixPreset("summer", "overcast", 0), wom: Pose = { ...idle(f, 1) };
           if (id === "01-morning") {
             const m = { ...idle(f, 1), expression: "happy" as const, armL: [150, 30] as [number, number], armR: [150, 30] as [number, number], turn: 0.1 };
@@ -225,7 +225,7 @@ export default defineFilm({
 
         // ------------------------------------------------ frost farm: failed harvest
         if (set === "frost") {
-          applyCam(c, cam(f));
+          applyCam(c, cam(f, shot.a));
           rig.apply("overcast", c, { focus: FARM2.clone().add(V(0, 1, -2)), radius: 16 }); clouds.apply("overcast", c);
           snow.amount = 0.8; snow.update(f, c);
           const stalk: Pose["hold"] = (g, h, side) => {
@@ -248,7 +248,7 @@ export default defineFilm({
 
         // ------------------------------------------------ village: cold, rain, prices
         if (set === "village") {
-          applyCam(c, cam(f));
+          applyCam(c, cam(f, shot.a));
           const id = shot.id;
           rig.apply("overcast", c, { focus: VIL.clone().add(V(-2, 1, -3)), radius: 18 }); clouds.apply("overcast", c);
           rain.amount = id === "10a-cold" ? 0 : id === "10b-rain" ? 1 : 0.55; rain.update(f, c);
@@ -266,7 +266,7 @@ export default defineFilm({
 
         // ------------------------------------------------ volcano
         if (set === "volcano") {
-          applyCam(c, cam(f));
+          applyCam(c, cam(f, shot.a));
           rig.apply("golden", c, { focus: VOLC.clone().add(V(0, 8, 0)), radius: 80, az: 120, el: 16 }); clouds.apply("golden", c);
           sea.apply("golden", f / FPS);
           steam.root.visible = f < T.unleashed + 20; steam.update(f, c); plume.update(f, c, new THREE.Color(1.05, 0.92, 0.85));
@@ -279,7 +279,7 @@ export default defineFilm({
 
         // ------------------------------------------------ atmosphere cross-section
         if (set === "atmos") {
-          applyCam(c, cam(f));
+          applyCam(c, cam(f, shot.a));
           rig.apply("summer", c, { focus: ATM.clone().add(V(0, 4, 0)), radius: 30, az: 160, el: 40 });
           scene.fog = null;
           const spread = ease((f - T.transformed) / 110), rays = ease((f - (T.reflected - 40)) / 70);
