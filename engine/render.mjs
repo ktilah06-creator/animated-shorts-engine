@@ -121,7 +121,7 @@ const key = (...parts) => crypto.createHash("sha256").update(parts.map((x) => (t
  * and adds audio if given. Returns { file, report }.
  *   mode: "final" | "preview";  only: [shotIds] forces those shots to re-render;  audio: path to a wav/mp3/m4a.
  */
-export async function renderFilm(id, { mode = "final", only, audio, scale, crf, post, log = console.log } = {}) {
+export async function renderFilm(id, { mode = "final", only, reuse = false, audio, scale, crf, post, log = console.log } = {}) {
   const pr = { ...PRESETS[mode], ...(scale ? { scale } : {}), ...(crf ? { crf } : {}) };
   const postAll = { ...(pr.post ?? {}), ...(post ?? {}) };
   const film = await openFilm(id, { scale: pr.scale, post: Object.keys(postAll).length ? postAll : undefined, log });
@@ -140,6 +140,18 @@ export async function renderFilm(id, { mode = "final", only, audio, scale, crf, 
       const k = key(bundle.hash, s, settings, lock);
       const file = path.join(cacheDir, `${s.id}.${mode}.${k}.mp4`);
       const forced = only && only.includes(s.id);
+      // reuse: keep the newest earlier render of a shot that was not forced, even though the bundle changed
+      // (the caller states that those shots did not change; e.g. after fixing only some shots)
+      const stale = reuse && !forced && !fs.existsSync(file)
+        ? fs.readdirSync(cacheDir).filter((x) => x.startsWith(`${s.id}.${mode}.`) && x.endsWith(".mp4") && !x.includes(".part."))
+            .map((x) => path.join(cacheDir, x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)[0]
+        : null;
+      if (stale) {
+        log(`shot ${s.id}: reused earlier render ${path.basename(stale)} (--reuse)`);
+        report.shots.push({ id: s.id, frames: s.b - s.a, cached: true, reused: path.basename(stale) });
+        files.push(stale);
+        continue;
+      }
       if (fs.existsSync(file) && !forced) {
         log(`shot ${s.id}: cached (${s.b - s.a} f)`);
         report.shots.push({ id: s.id, frames: s.b - s.a, cached: true });

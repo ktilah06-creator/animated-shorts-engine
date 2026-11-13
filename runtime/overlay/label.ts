@@ -39,6 +39,7 @@ export class Label {
       : `0 ${px(3)} 0 rgba(255,250,240,0.85), ${px(2)} 0 0 rgba(255,250,240,0.85), -${px(2)} 0 0 rgba(255,250,240,0.85), 0 -${px(2)} 0 rgba(255,250,240,0.85)` });
     if (st === "title" || st === "year") Object.assign(el.style, { color: o.color ?? "#fbf3e2", textShadow: `0 ${px(6)} 0 #3a2622, ${px(4)} 0 0 #3a2622, -${px(4)} 0 0 #3a2622, 0 -${px(4)} 0 #3a2622` });
     el.textContent = text;
+    if (text.includes("\n")) el.style.whiteSpace = "pre-line";   // explicit line breaks for long titles
     if (o.sub) {
       const s = document.createElement("div");
       Object.assign(s.style, { fontSize: px(size * 0.62), fontWeight: "500", opacity: "0.8", marginTop: px(4) });

@@ -3,3 +3,7 @@
 - 2026-11-12  character/child@1 approved: approved by the channel owner in review on 2026-11-12
 - 2026-11-12  data/natural-earth@1 approved: map data for globe scenes; public domain
 - 2026-11-12  font/fredoka@1 approved: label/title font; google/fonts commit 2e5fa2e
+- 2026-11-13  environment/farm-1810s@1 approved: approved by the channel owner (reviews 1 and 2)
+- 2026-11-13  environment/village-market@1 approved: approved by the channel owner (reviews 1 and 2)
+- 2026-11-13  environment/atmosphere-cross-section@1 approved: approved by the channel owner (reviews 1 and 2)
+- 2026-11-13  environment/atmosphere-cross-section@2 approved (supersedes @1): animation controls for the tambora-1816 film

@@ -14,9 +14,9 @@ import { Label, loadFont } from "@engine/overlay/label";
 import { applyCam, type CamPose } from "@engine/camera";
 import { V } from "@engine/env/geo";
 import { FARMER_WOMAN, FARMER_MAN, CHILD } from "../tambora-1816/cast";
-import { buildFarm, cropPatch } from "../tambora-1816/farm";
-import { buildAtmos, ATMOS_CAM } from "../tambora-1816/atmos";
-import { buildVillage, PriceBoard } from "../tambora-1816/village";
+import { buildFarm, cropPatch } from "@lib/environment/farm-1810s@1";
+import { buildAtmos, ATMOS_CAM } from "@lib/environment/atmosphere-cross-section@1";
+import { buildVillage, PriceBoard } from "@lib/environment/village-market@1";
 import type { Design } from "@engine/chars/toon";
 
 const FARM2 = V(400, 0, 0), VIL = V(800, 0, 0), VOLC = V(-3000, 0, 0), GLOBE = V(0, -6000, 0), ATM = V(6000, 0, 0);

@@ -1,0 +1,27 @@
+{
+  "character/child@1": {
+    "design.ts": "7a26491692d0dd8289143424816e698e4208518e67721432135bdbd2ebbc5a2e"
+  },
+  "character/farmer-man@1": {
+    "design.ts": "670617e2b5d8dba272a4b04fcd327d82e9f203d04cbab1fb616ee5d03ee8ff49"
+  },
+  "character/farmer-woman@1": {
+    "design.ts": "5ea4d3e68d90f1fa45da4b40e5c3a47b28a86baf9cc20eae42120615fef88b69"
+  },
+  "data/natural-earth@1": {
+    "ne_110m_admin_0_countries.geojson": "6866c877d39cba9c357620878839b336d569f8c662d3cfab4cb1dbe2d39c977f",
+    "ne_50m_land.geojson": "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b"
+  },
+  "environment/atmosphere-cross-section@2": {
+    "atmos.ts": "8e11db7c701c0e7e35dd480abfaae1446e1029819fb574d7cdcd30a2e4201aa8"
+  },
+  "environment/farm-1810s@1": {
+    "farm.ts": "1302f7528432728aeedf23878a00daa9643a80f90e1c6d0b59e2a90ebbfbe203"
+  },
+  "environment/village-market@1": {
+    "village.ts": "2453d3b55d4110061a6a310be3da9caf0dc18f09c801311a247f2c875a68bb3a"
+  },
+  "font/fredoka@1": {
+    "Fredoka-Variable.ttf": "2ba02e68b152868aef9ba28e24b3648c7d457fe6f25c761f2c2c53fb61a73fc8"
+  }
+}

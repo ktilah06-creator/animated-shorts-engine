@@ -34,7 +34,9 @@
           "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
           "note": "approved by the channel owner in review on 2026-11-12",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -73,7 +75,9 @@
           "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
           "note": "approved by the channel owner in review on 2026-11-12",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -111,7 +115,9 @@
           "modifications": "v1: approved design; continuous arm/leg outline (no elbow line) per review",
           "note": "approved by the channel owner in review on 2026-11-12",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -156,7 +162,160 @@
           "modifications": "none (files as published)",
           "note": "map data for globe scenes; public domain",
           "supersedes": null,
+          "usedBy": [
+            "tambora-1816"
+          ]
+        }
+      }
+    },
+    "environment/atmosphere-cross-section": {
+      "type": "environment",
+      "name": "atmosphere-cross-section",
+      "description": "explainer side view of the atmosphere: volcano + ash column, aerosol layer drifting downwind, tropopause, sunlight arrows (incoming / reflected / transmitted)",
+      "tags": [
+        "atmosphere",
+        "stratosphere",
+        "troposphere",
+        "aerosol",
+        "volcano",
+        "diagram",
+        "sunlight",
+        "climate",
+        "explainer"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/environment/atmosphere-cross-section/v001",
+          "entry": "atmos.ts",
+          "format": "ts",
+          "files": {
+            "atmos.ts": "d33eaedf185abef747047e9f38f5c2e7f6d068c470a503e55f5b6ecda62023ff"
+          },
+          "created": "2026-11-13",
+          "source": {
+            "kind": "original",
+            "creator": "Original set made with the channel's engine"
+          },
+          "license": {
+            "id": "Original",
+            "evidence": [],
+            "evidencePath": null
+          },
+          "modifications": "v1: approved in review 1-2 (2026-11-13)",
+          "note": "approved by the channel owner (reviews 1 and 2)",
+          "supersedes": null,
           "usedBy": []
+        },
+        "2": {
+          "status": "approved",
+          "path": "assets/environment/atmosphere-cross-section/v002",
+          "entry": "atmos.ts",
+          "format": "ts",
+          "files": {
+            "atmos.ts": "8e11db7c701c0e7e35dd480abfaae1446e1029819fb574d7cdcd30a2e4201aa8"
+          },
+          "created": "2026-11-13",
+          "source": {
+            "kind": "original",
+            "creator": "Original set made with the channel's engine"
+          },
+          "license": {
+            "id": "Original",
+            "evidence": [],
+            "evidencePath": null
+          },
+          "modifications": "v2: animation controls (columnAge: column grows from the vent; cloud: ash cloud fade-in); look unchanged from v1",
+          "note": "animation controls for the tambora-1816 film",
+          "supersedes": 1,
+          "usedBy": [
+            "tambora-1816"
+          ]
+        }
+      }
+    },
+    "environment/farm-1810s": {
+      "type": "environment",
+      "name": "farm-1810s",
+      "description": "1810s farm set: farmhouse, red barn, fence, crop field, trees, hills; summer or frost season; cropPatch() dense wheat for close shots",
+      "tags": [
+        "farm",
+        "farmhouse",
+        "barn",
+        "field",
+        "wheat",
+        "crops",
+        "rural",
+        "1800s",
+        "frost"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/environment/farm-1810s/v001",
+          "entry": "farm.ts",
+          "format": "ts",
+          "files": {
+            "farm.ts": "1302f7528432728aeedf23878a00daa9643a80f90e1c6d0b59e2a90ebbfbe203"
+          },
+          "created": "2026-11-13",
+          "source": {
+            "kind": "original",
+            "creator": "Original set made with the channel's engine"
+          },
+          "license": {
+            "id": "Original",
+            "evidence": [],
+            "evidencePath": null
+          },
+          "modifications": "v1: approved in review 1-2 (2026-11-13)",
+          "note": "approved by the channel owner (reviews 1 and 2)",
+          "supersedes": null,
+          "usedBy": [
+            "tambora-1816"
+          ]
+        }
+      }
+    },
+    "environment/village-market": {
+      "type": "environment",
+      "name": "village-market",
+      "description": "1810s village market street: two rows of houses, cobbles, market stalls with awnings, barrels, crates; PriceBoard with changeable price",
+      "tags": [
+        "village",
+        "market",
+        "street",
+        "houses",
+        "stall",
+        "bread",
+        "1800s",
+        "town"
+      ],
+      "versions": {
+        "1": {
+          "status": "approved",
+          "path": "assets/environment/village-market/v001",
+          "entry": "village.ts",
+          "format": "ts",
+          "files": {
+            "village.ts": "2453d3b55d4110061a6a310be3da9caf0dc18f09c801311a247f2c875a68bb3a"
+          },
+          "created": "2026-11-13",
+          "source": {
+            "kind": "original",
+            "creator": "Original set made with the channel's engine"
+          },
+          "license": {
+            "id": "Original",
+            "evidence": [],
+            "evidencePath": null
+          },
+          "modifications": "v1: approved in review 1-2 (2026-11-13)",
+          "note": "approved by the channel owner (reviews 1 and 2)",
+          "supersedes": null,
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     },
@@ -199,7 +358,9 @@
           "modifications": "renamed file Fredoka[wdth,wght].ttf -> Fredoka-Variable.ttf; otherwise unchanged",
           "note": "label/title font; google/fonts commit 2e5fa2e",
           "supersedes": null,
-          "usedBy": []
+          "usedBy": [
+            "tambora-1816"
+          ]
         }
       }
     }
