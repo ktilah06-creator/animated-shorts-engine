@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { NOINK } from "../post/ink";
 
-const puffTex = (() => {
+export const puffTex = (() => {
   const cache = new Map<number, THREE.Texture>();
   return (k: number) => {
     let t = cache.get(k); if (t) return t;
@@ -37,7 +37,10 @@ const puffTex = (() => {
 })();
 
 export type PlumeOpts = { vent: THREE.Vector3; start?: number; rate?: number; life?: number; rise?: number; spread?: number; wind?: [number, number, number];
-  size?: [number, number]; color?: [string, string]; seed?: number; max?: number; glow?: string };
+  size?: [number, number]; color?: [string, string]; seed?: number; max?: number; glow?: string;
+  ceiling?: number;        // world height where the column stops rising and spreads out along the wind
+  ceilingSpread?: number;  // how far (per metre of would-be rise) puffs travel downwind above the ceiling
+};
 
 export class Plume {
   readonly root = new THREE.Group();
@@ -69,7 +72,10 @@ export class Plume {
       const a = hsh(i, 1) * Math.PI * 2, rr = hsh(i, 2) * spread * (1 + u * 4);
       // fast at first, slowing (buoyant column), then mushrooming out
       const up = rise * (t - 0.25 * t * t / (life / fps)) * (0.8 + 0.4 * hsh(i, 3)) * 8;
-      sp.position.set(o.vent.x + Math.cos(a) * rr * 8 + wind[0] * t * t * 0.6, o.vent.y + up, o.vent.z + Math.sin(a) * rr * 8 + wind[2] * t * t * 0.6);
+      let y = o.vent.y + up, over = 0;
+      if (o.ceiling !== undefined && y > o.ceiling) { over = y - o.ceiling; y = o.ceiling + Math.min(over, 1.2) * (hsh(i, 8) - 0.3); }
+      const along = over * (o.ceilingSpread ?? 0.8);
+      sp.position.set(o.vent.x + Math.cos(a) * rr * 8 + wind[0] * t * t * 0.6 + along, y, o.vent.z + Math.sin(a) * rr * 8 + wind[2] * t * t * 0.6);
       const sz = w0 + (w1 - w0) * Math.sqrt(u) * (0.7 + 0.6 * hsh(i, 4));
       sp.scale.set(sz, sz, 1);
       const m = sp.material as THREE.SpriteMaterial;

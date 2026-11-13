@@ -34,6 +34,9 @@ export class Label {
       opacity: "0", willChange: "transform" });
     if (st === "tag") Object.assign(el.style, { background: "#fbf3e2", border: `${px(5)} solid #3a2622`, borderRadius: px(26), padding: `${px(14)} ${px(30)} ${px(16)}`,
       boxShadow: `0 ${px(8)} 0 rgba(58,38,34,0.35)` });
+    if (st === "plain") Object.assign(el.style, { fontWeight: "600", textShadow: (o.color ?? "#2b1f1c").toLowerCase() > "#888888"
+      ? `0 ${px(3)} 0 rgba(43,31,28,0.85), ${px(2)} 0 0 rgba(43,31,28,0.85), -${px(2)} 0 0 rgba(43,31,28,0.85), 0 -${px(2)} 0 rgba(43,31,28,0.85)`
+      : `0 ${px(3)} 0 rgba(255,250,240,0.85), ${px(2)} 0 0 rgba(255,250,240,0.85), -${px(2)} 0 0 rgba(255,250,240,0.85), 0 -${px(2)} 0 rgba(255,250,240,0.85)` });
     if (st === "title" || st === "year") Object.assign(el.style, { color: o.color ?? "#fbf3e2", textShadow: `0 ${px(6)} 0 #3a2622, ${px(4)} 0 0 #3a2622, -${px(4)} 0 0 #3a2622, 0 -${px(4)} 0 #3a2622` });
     el.textContent = text;
     if (o.sub) {

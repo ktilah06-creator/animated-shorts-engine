@@ -16,10 +16,11 @@ const VERT = /* glsl */ `varying vec2 vUv; void main() { vUv = position.xy * 0.5
 
 const COMMON = /* glsl */ `
 #include <packing>
-uniform float focus; uniform float cInf; uniform float nearScale; uniform float maxCoC; uniform float pxs;
+uniform float focus; uniform float focusFar; uniform float cInf; uniform float nearScale; uniform float maxCoC; uniform float pxs;
 uniform float cNear; uniform float cFar;
 float cocAt(float d) {                       // signed CoC radius in OUTPUT px
-  float c = cInf * pxs * (1.0 - focus / max(d, 1e-3));
+  float fd = clamp(d, focus, max(focus, focusFar));   // inside [focus, focusFar] nothing blurs
+  float c = cInf * pxs * (1.0 - fd / max(d, 1e-3));
   if (c < 0.0) c *= nearScale;
   return clamp(c, -maxCoC * pxs, maxCoC * pxs);
 }
@@ -100,7 +101,7 @@ export class HalfResDof extends Pass {
     this.cam = cam;
     this.needsDepthTexture = true;
     this.needsSwap = true;
-    this.uni = { focus: { value: 10 }, cInf: { value: 0 }, nearScale: { value: nearScale }, maxCoC: { value: maxCoC }, pxs: { value: 1 },
+    this.uni = { focus: { value: 10 }, focusFar: { value: 0 }, cInf: { value: 0 }, nearScale: { value: nearScale }, maxCoC: { value: maxCoC }, pxs: { value: 1 },
       cNear: { value: cam.near }, cFar: { value: cam.far } };
     const rt = () => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false, generateMipmaps: false });
     this.prepRT = rt(); this.blurRT = rt();
@@ -114,6 +115,8 @@ export class HalfResDof extends Pass {
   }
 
   set focus(v: number) { this.uni.focus.value = v; }
+  /** far end of the in-focus range (0 = single focus plane) */
+  set focusFar(v: number) { this.uni.focusFar.value = v; }
   set cInf(v: number) { this.uni.cInf.value = v; }
 
   override setDepthTexture(t: THREE.Texture) { this.prepMat.uniforms.tDepth.value = t; this.compMat.uniforms.tDepth.value = t; }

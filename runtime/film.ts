@@ -26,6 +26,7 @@ export type ShotDef = {
 /** What a stage returns for each frame (all optional). */
 export type FrameState = {
   focus?: number | THREE.Vector3;   // focus distance (m) or a world point to focus on; default = no DOF
+  focusTo?: number | THREE.Vector3; // optional far end of an in-focus RANGE (keeps a whole group sharp; half-res DOF only)
   cInf?: number;                    // blur radius (px at 1080x1920) at infinity; 0 = sharp
   grade?: string | GradeParams;     // preset name in GRADES or explicit params
   gradeAmount?: number;
@@ -160,7 +161,7 @@ async function start(film: FilmDef) {
   if (ink) composer.addPass(ink);
   else cam.layers.enable(NOINK);
   // depth of field; its passes are switched off on frames without blur (cInf 0), which skips their cost entirely
-  let lens: { focus: number; cInf: number } | null = null;
+  let lens: { focus: number; cInf: number; focusFar?: number } | null = null;
   let lensPasses: { enabled: boolean }[] = [];
   if (post.lens === "full") {
     const lb = new LensBlur({ maxCoC: 24, nearScale: 1.2 });
@@ -207,7 +208,12 @@ async function start(film: FilmDef) {
         let d = 10;
         if (typeof st.focus === "number") d = st.focus;
         else if (st.focus) { cam.getWorldDirection(fwd); d = tmp.copy(st.focus).sub(cam.position).dot(fwd); }
-        lens.focus = Math.max(0.3, d);
+        d = Math.max(0.3, d);
+        let d2 = 0;
+        if (typeof st.focusTo === "number") d2 = st.focusTo;
+        else if (st.focusTo) { cam.getWorldDirection(fwd); d2 = Math.max(0.3, tmp.copy(st.focusTo).sub(cam.position).dot(fwd)); }
+        lens.focus = d2 ? Math.min(d, d2) : d;          // (lens.focus is write-only: work with local distances)
+        if ("focusFar" in lens) lens.focusFar = d2 ? Math.max(d, d2) : 0;
       }
     }
     if (grade) {

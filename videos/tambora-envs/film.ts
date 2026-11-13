@@ -14,11 +14,12 @@ import { Label, loadFont } from "@engine/overlay/label";
 import { applyCam, type CamPose } from "@engine/camera";
 import { V } from "@engine/env/geo";
 import { FARMER_WOMAN, FARMER_MAN, CHILD } from "../tambora-1816/cast";
-import { buildFarm } from "../tambora-1816/farm";
+import { buildFarm, cropPatch } from "../tambora-1816/farm";
+import { buildAtmos, ATMOS_CAM } from "../tambora-1816/atmos";
 import { buildVillage, PriceBoard } from "../tambora-1816/village";
 import type { Design } from "@engine/chars/toon";
 
-const FARM2 = V(400, 0, 0), VIL = V(800, 0, 0), VOLC = V(-3000, 0, 0), GLOBE = V(0, -6000, 0);
+const FARM2 = V(400, 0, 0), VIL = V(800, 0, 0), VOLC = V(-3000, 0, 0), GLOBE = V(0, -6000, 0), ATM = V(6000, 0, 0);
 const TAMBORA: [number, number] = [-8.25, 118.0];
 
 export default defineFilm({
@@ -32,6 +33,8 @@ export default defineFilm({
     const clouds = new Clouds({ seed: 2 }); scene.add(clouds.root);
    
     buildFarm(scene); buildFarm(scene, { season: "frost", at: FARM2 }); buildVillage(scene, VIL);
+    cropPatch(scene, FARM2.clone().add(V(0.2, 0, -0.6)), { w: 9, d: 5.4, frost: true, clear: 0.5, height: 0.42 });
+    const atmos = buildAtmos(scene, ATM);
     // volcano + sea
     const isl = volcanoIsland({ radius: 40, height: 21, crater: 5.5, craterDepth: 3.5, seed: 4 }); isl.position.copy(VOLC); scene.add(isl);
     const sea = new Water({ x0: VOLC.x - 900, x1: VOLC.x + 900, z0: -900, z1: 900, y: 0, flow: [0.2, 0.1], tiles: [10, 50] }); scene.add(sea.mesh);
@@ -71,6 +74,12 @@ export default defineFilm({
       na: new Label(ctx, "North America"), eu: new Label(ctx, "Europe"),
       tam: new Label(ctx, "Mount Tambora", { sub: "April 1815" }),
       aer: new Label(ctx, "sulfate aerosols"),
+      strat: new Label(ctx, "Stratosphere", { style: "plain", color: "#fbf3e2", size: 50 }),
+      trop: new Label(ctx, "Troposphere", { style: "plain", color: "#2b3a4a", size: 50 }),
+      inc: new Label(ctx, "incoming sunlight", { style: "plain", color: "#fbf3e2", size: 40 }),
+      refl: new Label(ctx, "reflected to space", { style: "plain", color: "#fbf3e2", size: 40 }),
+      wind: new Label(ctx, "wind", { style: "plain", color: "#fbf3e2", size: 42 }),
+      less: new Label(ctx, "less sunlight reaches the ground", { style: "plain", color: "#2b3a4a", size: 38 }),
     };
     const sunW = V(1, 0.35, 0.6).normalize();
     let arrowsBuilt = false;
@@ -80,7 +89,7 @@ export default defineFilm({
       frame(f, shot, c) {
         const id = shot.id;
         for (const l of Object.values(labels)) l.el.style.opacity = "0";
-        const spaceShot = id === "globe-1816" || id === "aerosol-veil";
+        const spaceShot = id === "globe-1816";
         rig.root.visible = !spaceShot; clouds.root.visible = !spaceShot; stars.visible = spaceShot;
         snow.amount = id === "farm-frost" ? 0.8 : 0; rain.amount = id === "village-rain" ? 1 : 0;
         arrows.visible = id === "aerosol-veil";
@@ -92,7 +101,7 @@ export default defineFilm({
           woman.update({ ...idle(10, 1), expression: "happy", armL: [150, 30], armR: [150, 30], turn: 0.1 }, c, rig);
           ret = { grade: "summer", cInf: 5, focus: V(0, 1.4, 0.6) };
         } else if (id === "farm-frost") {
-          applyCam(c, P([1.8, 0.9, 4.6], [-0.4, 0.8, -2], 44, FARM2));
+          applyCam(c, P([1.5, 1.75, 4.9], [-0.1, 0.6, -0.6], 42, FARM2));
           rig.apply("overcast", c, { focus: FARM2.clone().add(V(0, 1, -2)), radius: 16 }); clouds.apply("overcast", c);
           man.update({ ...idle(10, 2), expression: "sad", kneel: 1, armR: [28, 70], armL: [14, 30], tilt: 6, look: [0.5, 0.8],
             hold: (g, h, side) => {
@@ -112,7 +121,8 @@ export default defineFilm({
           queue.forEach((a, i) => a.update({ ...idle(10, 10 + i), expression: i === 0 ? "worried" : i === 3 ? "sad" : "neutral", turn: -0.5, look: [-0.8, 0] }, c, rig));
           board.set("Bread", "3×", "#b0302a");
           rain.update(30, c);
-          ret = { grade: "cold", cInf: 6, focus: VIL.clone().add(V(-2.4, 1.5, -1.4)) };
+          // keep the whole queue sharp (child in front .. adults behind); only the street beyond blurs
+          ret = { grade: "cold", cInf: 6, focus: queue[3].root.position.clone().add(V(0, 0.6, 0)), focusTo: queue[0].root.position.clone().add(V(0, 1.2, 0)) };
         } else if (id === "tambora-eruption") {
           applyCam(c, P([72, 3, 92], [0, 32, 0], 46, VOLC));
           rig.apply("golden", c, { focus: VOLC.clone().add(V(0, 8, 0)), radius: 80, az: 120, el: 16 }); clouds.apply("golden", c);
@@ -120,6 +130,17 @@ export default defineFilm({
           plume.update(0, c, new THREE.Color(1.05, 0.92, 0.85));
           labels.tam.update(5, { at: [0.3, 0.74], from: 0, to: 100 });
           ret = { grade: "golden", exposure: 1 };
+        } else if (id === "aerosol-veil") {
+          applyCam(c, P(ATMOS_CAM.pos, ATMOS_CAM.look, ATMOS_CAM.fov, ATM));
+          rig.apply("summer", c, { focus: ATM.clone().add(V(0, 4, 0)), radius: 30, az: 160, el: 40 });
+          scene.fog = null;
+          atmos.update(0, c, { spread: 1, rays: 1 });
+          const L = labels, all = { cam: c, from: 0, to: 100 };
+          L.strat.update(5, { at: atmos.anchors.strat, ...all }); L.trop.update(5, { at: atmos.anchors.trop, ...all });
+          L.aer.update(5, { at: atmos.anchors.aerosols, ...all }); L.inc.update(5, { at: atmos.anchors.incoming, ...all });
+          L.refl.update(5, { at: atmos.anchors.reflected, ...all }); L.wind.update(5, { at: atmos.anchors.wind, ...all });
+          L.less.update(5, { at: atmos.anchors.ground, ...all });
+          ret = { grade: "neutral", cInf: 0 };
         } else {
           scene.fog = null; scene.background = new THREE.Color("#05070f");
           if (id === "globe-1816") {
