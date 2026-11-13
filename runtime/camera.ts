@@ -38,9 +38,11 @@ function withCreep(p: CamPose, k: CamKey, f: number): CamPose {
 
 export function camPath(keys: CamKey[], { kicks = [] as Kick[], fov = 40 } = {}) {
   const ks = keys.slice().sort((a, b) => a.f - b.f);
-  return (f: number): CamPose => {
+  /** f = frame to evaluate; keyAt = frame that picks the key (pass the shot's first frame so a shot keeps its own
+   *  camera while it is crossfading out under the next shot) */
+  return (f: number, keyAt: number = f): CamPose => {
     let i = 0;
-    while (i + 1 < ks.length && ks[i + 1].f <= f) i++;
+    while (i + 1 < ks.length && ks[i + 1].f <= keyAt) i++;
     const k = ks[i];
     let p = withCreep(at(k, f), k, f);
     if (i > 0 && k.glide && !k.cut && f < k.f + k.glide) {

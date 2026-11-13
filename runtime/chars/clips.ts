@@ -31,13 +31,21 @@ export function walk(phase: number): Partial<Pose> {
   };
 }
 
-/** cold shiver: small fast jitter with arms hugged */
+/** cold shiver: small fast jitter, arms folded across the chest (self-hug: elbows bend inward, one forearm above the
+ *  other so the hands never tangle; review 3 fix) */
 export function shiver(f: number, amount = 1): Partial<Pose> {
-  return { shiver: Math.sin(f * 2.7) * amount, armL: [-28, 120], armR: [-28, 120], expression: "cold" };
+  return { shiver: Math.sin(f * 2.7) * amount, armL: [-4, -84], armR: [-6, -100], expression: "cold" };
 }
 
-/** blend two poses (numbers interpolate, discrete fields switch at the midpoint) */
-export function blend(a: Pose, b: Pose, t: number): Pose {
+/** the pose a character has when a field is not given (what toon.ts draws by default) */
+export const REST: Required<Pick<Pose, "armL" | "armR" | "legL" | "legR" | "bob" | "lean" | "tilt" | "turn" | "blink" | "shiver" | "kneel" | "look">> = {
+  armL: [8, 6], armR: [8, 6], legL: [0, 0], legR: [0, 0], bob: 0, lean: 0, tilt: 0, turn: 0, blink: 0, shiver: 0, kneel: 0, look: [0, 0],
+};
+
+/** blend two poses (numbers interpolate, discrete fields switch at the midpoint); a field missing on one side blends
+ *  from / to its rest value, so e.g. arms never jump to the target pose on the first frame */
+export function blend(a0: Pose, b0: Pose, t: number): Pose {
+  const a = { ...REST, ...a0 } as Pose, b = { ...REST, ...b0 } as Pose;
   const out: Record<string, unknown> = { ...a };
   const k = ease(t);
   for (const [key, vb] of Object.entries(b)) {
