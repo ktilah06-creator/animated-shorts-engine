@@ -13,7 +13,7 @@ import { NOINK } from "@engine/post/ink";
 import { Actor } from "@engine/chars/actor";
 import { idle, shiver } from "@engine/chars/clips";
 import { Label, loadFontUrl } from "@engine/overlay/label";
-import { Inset, SO2_TO_AEROSOL } from "@engine/overlay/inset";
+import { Inset, SO2_OXIDATION } from "@engine/overlay/inset";
 import { applyCam } from "@engine/camera";
 import { FARMER_WOMAN, FARMER_MAN, CHILD } from "../tambora-1816/cast";
 import { buildVillage2 } from "../tambora-1816/village2";
@@ -48,15 +48,15 @@ export default defineFilm({
     // ---- volcano (1 unit = 1 m): island ~9 km across, summit ~2.9 km, column to ~23 km
     const ISC = 115;
     const isl = volcanoIsland({ radius: 40, height: 25, crater: 4.2, craterDepth: 3, seed: 4, seg: 260,
-      colors: { beach: "#5e5548", forest: "#26381f", scrub: "#3f4233", rock: "#3a322d", ash: "#4a433e", crater: "#221b1a" } });
+      colors: { beach: "#8a7c66", forest: "#35562a", scrub: "#56593e", rock: "#4b4039", ash: "#5c544d", crater: "#221b1a" } });
     const vmaps = pbrMaps("volcanic"); const vn = vmaps.normalMap.clone(); vn.repeat.set(30, 30); vn.needsUpdate = true;
-    isl.material = new THREE.MeshStandardMaterial({ vertexColors: true, color: "#6c6c6c", roughness: 0.95, normalMap: vn, normalScale: new THREE.Vector2(1.4, 1.4) });
+    isl.material = new THREE.MeshStandardMaterial({ vertexColors: true, color: "#9a9a9a", roughness: 0.95, normalMap: vn, normalScale: new THREE.Vector2(1.4, 1.4) });
     isl.scale.setScalar(ISC); isl.position.copy(VOLC); isl.castShadow = isl.receiveShadow = true; scene.add(isl);
     const wave = pbrMaps("waves").normalMap.clone(); wave.repeat.set(900, 900); wave.needsUpdate = true;
-    const sea = new THREE.Mesh(new THREE.PlaneGeometry(240000, 240000).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: "#0b1a24", roughness: 0.55, metalness: 0, envMapIntensity: 0.12, normalMap: wave, normalScale: new THREE.Vector2(0.5, 0.5) }));
-    sea.position.copy(VOLC).add(V(0, 2, 0)); sea.receiveShadow = true; scene.add(sea);
+    const sea = new THREE.Mesh(new THREE.PlaneGeometry(240000, 240000).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: "#1d3a4c", roughness: 0.42, metalness: 0, envMapIntensity: 0.3, normalMap: wave, normalScale: new THREE.Vector2(0.5, 0.5) }));
+    sea.position.copy(VOLC).add(V(0, 75, 0)); sea.receiveShadow = true; scene.add(sea);
     const vent = VOLC.clone().add(V(0, 2300, 0));
-    const column = new EruptionColumn({ vent, height: 21000, base: 520, top: 3600, umbrella: 15000, wind: [0.1, -0.02], seed: 2, dark: "#2c2624", lit: "#ddd0c4" });
+    const column = new EruptionColumn({ vent, height: 22000, base: 520, top: 3200, umbrella: 9500, umbrellaCount: 640, count: 560, wind: [0.04, -0.01], seed: 2, dark: "#2c2624", lit: "#e2d6ca" });
     scene.add(column.root);
     const prof = (d: number) => ISC * 25 * Math.pow(Math.max(0, 1 - d / (40 * ISC)), 1.65);
     const flows = new PyroFlows({ center: VOLC, rim: 600, base: 4100, height: 2900, start: -200, lanes: 12, perLane: 30, speed: 0.12, size: [180, 750], seed: 5 });
@@ -67,7 +67,7 @@ export default defineFilm({
     const field = new THREE.Group(); field.position.copy(FIELD); scene.add(field);
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ ...(() => { const m = pbrMaps("frost"); const t = { map: m.map.clone(), normalMap: m.normalMap.clone(), roughnessMap: m.roughnessMap.clone() }; for (const x of Object.values(t)) { x.repeat.set(120, 120); x.needsUpdate = true; } return t; })() }));
     ground.receiveShadow = true; field.add(ground);
-    field.add(wheatField({ w: 14, d: 10, count: 30000, h: 0.95, frost: 0.4, clear: [[0.4, 0.8, 0.85], [1.4, 2.6, 0.9]] }));
+    field.add(wheatField({ w: 14, d: 10, count: 30000, h: 0.95, frost: 0.4, clear: [[0.4, 0.78, 0.74], [1.4, 2.6, 0.9]] }));
     const man = new Actor(FARMER_MAN, 1.75); man.root.position.copy(FIELD).add(V(0.4, 0, 0.8)); scene.add(man.root);
     const woman = new Actor(FARMER_WOMAN, 1.62), w2 = new Actor(FARMER_WOMAN, 1.6), kid = new Actor(CHILD, 2.5);
     const sq = V(-4.2, 0, -23);
@@ -80,27 +80,27 @@ export default defineFilm({
     cg.fillStyle = "#5a4330"; cg.fillRect(0, 0, 512, 640); cg.fillStyle = "#23282a"; cg.fillRect(22, 22, 468, 596);
     for (let i = 0; i < 1600; i++) { cg.fillStyle = `rgba(255,255,255,${0.02 + r() * 0.03})`; cg.fillRect(r() * 512, r() * 640, 2 + r() * 6, 1); }
     cg.fillStyle = "#f1eee6"; cg.textAlign = "center"; cg.font = "600 86px Cinzel, serif"; cg.fillText("BREAD", 256, 170);
-    cg.font = "500 40px Inter, sans-serif"; cg.fillText("one loaf", 256, 240);
-    // a rising price, drawn as a chalk arrow (the script says "rising prices"; no invented figures)
-    cg.strokeStyle = "#f3d9c7"; cg.lineWidth = 16; cg.lineCap = "round"; cg.lineJoin = "round";
-    cg.beginPath(); cg.moveTo(130, 470); cg.lineTo(215, 400); cg.lineTo(275, 430); cg.lineTo(375, 300); cg.stroke();
-    cg.beginPath(); cg.moveTo(318, 300); cg.lineTo(380, 292); cg.lineTo(378, 356); cg.stroke();
-    cg.font = "600 52px Cinzel, serif"; cg.fillStyle = "#f1eee6"; cg.fillText("PRICE", 256, 560);
+    cg.font = "500 40px Inter, sans-serif"; cg.fillText("one loaf", 256, 228);
+    // a rising price: a bold chalk arrow pointing up beside "PRICE" (the script says "rising prices"; no invented figures)
+    cg.fillStyle = "#e8674a"; cg.strokeStyle = "#f6d2c4"; cg.lineWidth = 5; cg.lineJoin = "round";
+    cg.beginPath(); cg.moveTo(256, 268); cg.lineTo(366, 388); cg.lineTo(300, 388); cg.lineTo(300, 500); cg.lineTo(212, 500); cg.lineTo(212, 388); cg.lineTo(146, 388); cg.closePath();
+    cg.fill(); cg.stroke();
+    cg.font = "700 64px Cinzel, serif"; cg.fillStyle = "#f1eee6"; cg.fillText("PRICE", 256, 580);
     const cbt = new THREE.CanvasTexture(cb); cbt.colorSpace = THREE.SRGBColorSpace;
-    const board = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.75), new THREE.MeshStandardMaterial({ map: cbt, roughness: 0.85 }));
-    board.position.copy(sq).add(V(0.75, 1.42, 0.55)); board.rotation.set(-0.12, 0.35, 0); scene.add(board);
+    const board = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.9), new THREE.MeshStandardMaterial({ map: cbt, roughness: 0.85 }));
+    board.position.copy(sq).add(V(0.75, 1.56, 0.55)); board.rotation.set(-0.12, 0.35, 0); scene.add(board);
     // labels / insets
     const L = {
-      so2: new Label(ctx, "Sulfur dioxide gas (SO₂)", { style: "doc", accent: "#f2d34f" }),
-      aer: new Label(ctx, "Sulfate aerosols", { style: "doc", accent: "#cfe0ff" }),
+      so2: new Label(ctx, "Sulfur dioxide gas (SO₂)", { style: "doc", size: 42, accent: "#f2d34f" }),
+      aer: new Label(ctx, "Sulfate aerosols", { style: "doc", size: 42, accent: "#cfe0ff" }),
       strat: new Label(ctx, "STRATOSPHERE", { style: "doc", size: 32, accent: "#6fa2d8" }), trop: new Label(ctx, "TROPOSPHERE", { style: "doc", size: 32, accent: "#9cc3e6" }),
-      inc: new Label(ctx, "Incoming sunlight", { style: "doc", accent: "#ffc94a" }), refl: new Label(ctx, "Reflected back to space", { style: "doc", accent: "#ffc94a" }),
-      less: new Label(ctx, "Less sunlight reaches the surface", { style: "doc", accent: "#e2553f" }),
+      inc: new Label(ctx, "Incoming sunlight", { style: "doc", size: 42, accent: "#ffc94a" }), refl: new Label(ctx, "Some is scattered\nback to space", { style: "doc", size: 42, accent: "#ffc94a" }),
+      less: new Label(ctx, "Less sunlight\nreaches the surface", { style: "doc", size: 42, accent: "#e2553f" }),
       volc: new Label(ctx, "Magma chamber", { style: "doc", size: 28, accent: "#e2553f" }), cone: new Label(ctx, "Mount Tambora", { style: "doc", size: 30, accent: "#e2553f" }), ground: new Label(ctx, "Ground", { style: "doc", size: 30, accent: "#4c8a36" }),
       tam: new Label(ctx, "Mount Tambora", { style: "doc", sub: "Sumbawa, Indonesia · April 1815", size: 46, accent: "#e2553f" }),
       title: new Label(ctx, "THE YEAR\nWITHOUT A SUMMER", { style: "cine-title", size: 64 }), year: new Label(ctx, "1816", { style: "cine-sub", size: 52 }),
     };
-    const inset = new Inset(ctx, SO2_TO_AEROSOL, "SO₂ + water vapour → tiny sulfate aerosol droplets", { at: [0.66, 0.3], size: 400 });
+    const inset = new Inset(ctx, SO2_OXIDATION, "SO₂ is oxidised to sulfuric acid,<br>which forms sulfate aerosol droplets", { at: [0.64, 0.28], size: 480 });
     const hide = () => { for (const l of Object.values(L)) l.el.style.opacity = "0"; inset.el.style.opacity = "0"; };
     const lt = (c: THREE.Camera) => ({ cam: c, from: 0, to: 100 });
 
@@ -124,8 +124,8 @@ export default defineFilm({
           return { exposure: st.exposure, grade: "cine", cInf: 3, focus: V(0, 2, -6), sun: st.sunWorld, godrays: 0.35 };
         }
         if (shot.id === "eruption") {
-          const D = 25000, dir = V(0.55, 0, 0.83).normalize();
-          applyCam(c, { pos: [VOLC.x + dir.x * D, 320, VOLC.z + dir.z * D], look: [VOLC.x, 320 + D * Math.tan(0.36), VOLC.z], fov: 50 });
+          const D = 31000, dir = V(0.55, 0, 0.83).normalize(), CY = 1900;
+          applyCam(c, { pos: [VOLC.x + dir.x * D, CY, VOLC.z + dir.z * D], look: [VOLC.x, CY + D * Math.tan(0.29), VOLC.z], fov: 56 });
           c.near = 30; c.far = 150000; c.updateProjectionMatrix();
           const ERUPT = { ...mixCine("cine-eruption", "cine-ashfall", 0.3), fogDensity: 0.000014, sunAz: 305, sunEl: 13, overcast: 0.45, skyTint: "#8d7c72", sunI: 2.4, hemiI: 0.35, envI: 0.4 };
           const st = cine.apply(ERUPT, c, { focus: VOLC.clone().add(V(0, 6000, 0)), radius: 30000 });
@@ -151,10 +151,13 @@ export default defineFilm({
         }
         if (shot.id === "harvest") {
           applyCam(c, { pos: [FIELD.x + 2.6, 1.45, FIELD.z + 5.6], look: [FIELD.x + 0.55, 0.7, FIELD.z + 0.8], fov: 34 });
-          const st = cine.apply("cine-snow", c, { focus: FIELD.clone().add(V(0, 0.5, 0)), radius: 10 });
+          // a little more sun than pure snow light, so the farmer and the wheat share one readable shadow direction
+          const HARV = { ...mixCine("cine-snow", "cine-overcast", 0.45), sunAz: 215, sunEl: 26 };
+          const st = cine.apply(HARV, c, { focus: FIELD.clone().add(V(0, 0.5, 0)), radius: 8 });
           snow.amount = 0.9; snow.update(30, c);
-          const sd = CineRig.sunDirOf(CINE["cine-snow"]);
-          const lt2 = man.light("#c9d1dc", sd, c, "rgb(70,78,100)", 0.3);
+          const sd = CineRig.sunDirOf(HARV);
+          man.ao = 0.55; man.contact = 0.85;
+          const lt2 = man.light("#aab3c0", sd, c, "rgb(52,58,78)", 0.42);
           man.update({ ...idle(10, 2), expression: "sad", kneel: 1, armR: [28, 70], armL: [14, 30], tilt: 6, look: [0.5, 0.8], light: lt2,
             hold: (g, h, side) => {
               if (side !== "R") return;
@@ -163,8 +166,8 @@ export default defineFilm({
               g.save(); g.translate(h.x + 76, h.y - 112); g.rotate(1.1);
               for (let k = 0; k < 6; k++) { g.fillStyle = "#b8925a"; g.strokeStyle = "#3a2622"; g.lineWidth = 3; g.beginPath(); g.ellipse(k * 9, k % 2 ? 6 : -6, 9, 5, 0.3, 0, Math.PI * 2); g.fill(); g.stroke(); }
               g.restore();
-            } }, c);
-          return { exposure: st.exposure, grade: "cine-cold", cInf: 10, focus: man.root.position.clone().add(V(0, 0.7, 0)) };
+            } }, c, undefined, sd);
+          return { exposure: st.exposure, grade: "cine-cold", cInf: 14, focus: man.root.position.clone().add(V(0, 0.7, 0)) };
         }
         if (shot.id === "market") {
           applyCam(c, { pos: [sq.x + 1.3, 1.45, sq.z + 8.6], look: [sq.x + 1.15, 1.1, sq.z + 1.5], fov: 44 });

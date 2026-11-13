@@ -106,17 +106,19 @@ export class EruptionColumn {
     for (let i = 0; i < this.umb.length; i++) {
       const sp = this.umb[i];
       if (umbGrow <= 0) { sp.visible = false; continue; }
-      const a = hs(i, 11) * 6.283, d = Math.sqrt(hs(i, 12)) * o.umbrella * umbGrow;
-      const down = 0.45 + 0.55 * Math.max(0, Math.cos(a - Math.atan2(wz, wx)));   // stretched downwind
-      const x = Math.cos(a) * d * down, z = Math.sin(a) * d * down * 0.8;
-      const y = H * (0.93 + 0.08 * hs(i, 13)) - (d / o.umbrella) * H * 0.07 + Math.sin(t * 0.3 + i) * 60;
+      // mushroom cap: a broad, flattened disc whose rim rolls over and droops; puffs concentrate toward the rim
+      const a = hs(i, 11) * 6.283, q = Math.pow(hs(i, 12), 0.6), d = q * o.umbrella * umbGrow;
+      const x = Math.cos(a) * d, z = Math.sin(a) * d * 0.85;
+      const dome = Math.sqrt(Math.max(0, 1 - q * q));
+      const y = H * 0.9 + H * 0.09 * dome + H * 0.03 * (hs(i, 13) - 0.5) - H * 0.05 * Math.pow(q, 3) + Math.sin(t * 0.3 + i) * 60;
       sp.position.set(o.vent.x + wx * H + x, o.vent.y + y, o.vent.z + wz * H + z);
-      const sz = o.top * (0.8 + 0.8 * hs(i, 14));
-      sp.scale.set(sz * 1.35, sz, 1);
+      const sz = o.top * (0.7 + 0.7 * hs(i, 14)) * (0.8 + 0.5 * q);
+      sp.scale.set(sz * 1.3, sz, 1);
       const m = sp.material as THREE.SpriteMaterial;
-      tmp.copy(this.dark).lerp(this.lit, 0.55 + 0.45 * hs(i, 15));
+      const side = 0.5 + 0.5 * (Math.cos(a) * sunDir.x + Math.sin(a) * sunDir.z);
+      tmp.copy(this.dark).lerp(this.lit, Math.min(1, 0.35 + 0.35 * side + 0.3 * dome + 0.15 * hs(i, 15)));
       m.color.copy(tmp).multiply(light);
-      m.opacity = 0.9 * Math.min(1, umbGrow * 2 - d / o.umbrella * 0.6);
+      m.opacity = 0.92 * Math.min(1, umbGrow * 2.2 - q * 0.8);
       m.rotation = hs(i, 16) * 6.283;
       sp.visible = true;
     }

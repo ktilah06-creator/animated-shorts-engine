@@ -52,3 +52,35 @@ export const SO2_TO_AEROSOL = `
     </g>
   </g>
 </svg>`;
+
+/** SVG for the inset, chemically complete: SO2 is oxidised (by OH radicals) to sulfuric acid, which condenses with water
+ *  into sulfate aerosol droplets. */
+export const SO2_OXIDATION = `
+<svg viewBox="0 0 400 400" width="100%" height="100%">
+  <defs><radialGradient id="drop2" cx="40%" cy="35%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#bcd3ee"/></radialGradient>
+    <marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#fbf3e2"/></marker></defs>
+  <g font-family="Inter, sans-serif" font-weight="700" text-anchor="middle">
+    <g transform="translate(92,150)">
+      <circle r="24" fill="#f2d34f" stroke="#2b2230" stroke-width="4"/><text y="9" font-size="24" fill="#2b2230">S</text>
+      <circle cx="-34" cy="18" r="16" fill="#e2553f" stroke="#2b2230" stroke-width="4"/><circle cx="34" cy="18" r="16" fill="#e2553f" stroke="#2b2230" stroke-width="4"/>
+      <text y="-38" font-size="26" fill="#fbf3e2">SO₂</text>
+    </g>
+    <path d="M150 150 L222 150" stroke="#fbf3e2" stroke-width="7" stroke-linecap="round" marker-end="url(#ah)"/>
+    <text x="188" y="132" font-size="21" fill="#ffd27a">+ OH</text>
+    <text x="188" y="182" font-size="17" fill="#ffd27a" font-weight="600">oxidation</text>
+    <g transform="translate(300,150)">
+      <circle cx="-30" cy="-22" r="13" fill="#e2553f" stroke="#2b2230" stroke-width="3.5"/><circle cx="30" cy="-22" r="13" fill="#e2553f" stroke="#2b2230" stroke-width="3.5"/>
+      <circle cx="-30" cy="22" r="13" fill="#e2553f" stroke="#2b2230" stroke-width="3.5"/><circle cx="30" cy="22" r="13" fill="#e2553f" stroke="#2b2230" stroke-width="3.5"/>
+      <circle cx="-48" cy="38" r="8" fill="#f4f1ea" stroke="#2b2230" stroke-width="3"/><circle cx="48" cy="38" r="8" fill="#f4f1ea" stroke="#2b2230" stroke-width="3"/>
+      <circle r="20" fill="#f2d34f" stroke="#2b2230" stroke-width="4"/><text y="7" font-size="19" fill="#2b2230">S</text>
+      <text y="-44" font-size="24" fill="#fbf3e2">H₂SO₄</text>
+    </g>
+    <path d="M292 206 Q285 248 250 270" fill="none" stroke="#fbf3e2" stroke-width="7" stroke-linecap="round" marker-end="url(#ah)"/>
+    <text x="318" y="262" font-size="17" fill="#ffd27a" font-weight="600">+ H₂O</text>
+    <g transform="translate(192,298)">
+      <circle r="44" fill="url(#drop2)" stroke="#2b2230" stroke-width="4"/>
+      <circle cx="-15" cy="-17" r="9" fill="#ffffff" opacity="0.9"/>
+      <text y="72" font-size="20" fill="#fbf3e2">sulfate aerosol</text>
+    </g>
+  </g>
+</svg>`;

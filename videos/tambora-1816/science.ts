@@ -102,21 +102,34 @@ export function buildScience(scene: THREE.Scene, at: THREE.Vector3) {
     m.position.copy(a); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().normalize()); m.scale.set(1, d.length(), 1); m.layers.set(NOINK); root.add(m); return m;
   };
   const pulseMat = new THREE.SpriteMaterial({ map: dotTex(), color: new THREE.Color(2.2, 1.8, 0.8), transparent: true, depthWrite: false, fog: false });
+  // Each beam enters the aerosol layer and is partly scattered: thin rays spray out in many directions (some back up
+  // toward space), and a dimmer, thinner beam continues to the ground. Scattering, not a mirror.
+  const downMat = beamMat.clone(); downMat.opacity = 0.42;
+  const scatMat = beamMat.clone(); scatMat.opacity = 0.5;
   for (let k = 0; k < 5; k++) {
-    const hit = V(-1 + k * 2.6, LAYER + 0.6, 1.2), a = hit.clone().addScaledVector(sunDir, -14);
-    const refl = k % 2 === 0;
+    const hit = V(-1 + k * 2.6, LAYER + 0.3 + (k % 2) * 0.5, 1.2), a = hit.clone().addScaledVector(sunDir, -14);
     const mesh = tube(a, hit, 0.09);
-    const b = refl ? hit.clone().add(V(sunDir.x, -sunDir.y, 0).multiplyScalar(8)) : V(hit.x + (prof(hit.x) - hit.y) * (sunDir.x / sunDir.y), prof(hit.x + (prof(hit.x) - hit.y) * (sunDir.x / sunDir.y)), 1.2);
-    const down = tube(hit, b, refl ? 0.08 : 0.05);
-    const pulses = Array.from({ length: 4 }, () => { const s = new THREE.Sprite(pulseMat); s.scale.setScalar(0.55); s.layers.set(NOINK); root.add(s); return s; });
-    beams.push({ a, b: hit, refl, mesh, down, pulses });
+    const gx = hit.x + (prof(hit.x) - hit.y) * (sunDir.x / sunDir.y);
+    const b = V(gx, prof(gx), 1.2);
+    const down = tube(hit, b, 0.04); down.material = downMat;
+    const scat: { m: THREE.Mesh; len: number; dir: THREE.Vector3 }[] = [];
+    for (let j = 0; j < 7; j++) {
+      // directions spread over the full circle, biased forward (Mie scattering by droplets is forward-peaked),
+      // with a share going upward: that is the light sent back toward space
+      const ang = (j / 7) * Math.PI * 2 + k * 0.7, dir = V(Math.cos(ang), Math.sin(ang), 0).lerp(sunDir, 0.25).normalize();
+      const len = 2.2 + 2.6 * h(k * 7 + j, 9) * (dir.y > 0 ? 1.15 : 0.8);
+      const m = tube(hit, hit.clone().addScaledVector(dir, len), 0.028); m.material = scatMat;
+      scat.push({ m, len, dir });
+    }
+    const pulses = Array.from({ length: 4 }, () => { const sp = new THREE.Sprite(pulseMat); sp.scale.setScalar(0.55); sp.layers.set(NOINK); root.add(sp); return sp; });
+    beams.push({ a, b: hit, refl: false, mesh, down, pulses, scat } as never);
     (down as unknown as { userData: { end: THREE.Vector3 } }).userData.end = b;
   }
   return {
     root, vent: vent.clone().add(at),
     anchors: {
       so2: at.clone().add(V(-2.2, 11, 2)), aer: at.clone().add(V(4.2, LAYER + 2.4, 2)), strat: at.clone().add(V(-7.5, 16.6, 2)), trop: at.clone().add(V(-7.2, 13.4, 2)),
-      inc: at.clone().add(V(8.4, 31.2, 2)), refl: at.clone().add(V(-6, 26.4, 2)), less: at.clone().add(V(6.5, 8.6, 2)),
+      inc: at.clone().add(V(8.4, 31.2, 2)), refl: at.clone().add(V(-5.5, 25.4, 2)), less: at.clone().add(V(6.5, 8.6, 2)),
       volc: at.clone().add(V(-6, -7.8, 3.2)), cone: at.clone().add(V(-12.5, 5.4, 3.2)), ground: at.clone().add(V(9.5, 0.2, 3.2)),
     },
     /** gas 0..1 (column rising), convert 0..1 (gas -> droplets), spread 0..1 (layer downwind), rays 0..1 (sunlight on), t seconds */
@@ -146,12 +159,13 @@ export function buildScience(scene: THREE.Scene, at: THREE.Vector3) {
         const end = (bm.down as unknown as { userData: { end: THREE.Vector3 } }).userData.end;
         const on2 = ease(rays * 3 - k * 0.3 - 0.9);
         bm.down!.visible = on2 > 0.01; bm.down!.scale.y = bm.b.distanceTo(end) * on2;
+        for (const sc of (bm as unknown as { scat?: { m: THREE.Mesh; len: number }[] }).scat ?? []) { sc.m.visible = on2 > 0.01; sc.m.scale.y = sc.len * on2; }
         bm.pulses.forEach((p, j) => {
           const ph = ((t * 0.55 + j / bm.pulses.length + k * 0.13) % 1);
           const seg1 = ph < 0.5, q = seg1 ? ph * 2 : (ph - 0.5) * 2;
           const P = seg1 ? bm.a.clone().lerp(bm.b, q) : bm.b.clone().lerp(end, q);
           p.position.copy(P); p.visible = (seg1 ? on : on2) > 0.95;
-          p.scale.setScalar(seg1 || bm.refl ? 0.55 : 0.32);
+          p.scale.setScalar(seg1 ? 0.55 : 0.3);
         });
       });
     },

@@ -41,7 +41,10 @@ export class Label {
       backdropFilter: "blur(2px)" });
     if (st === "cine-title" || st === "cine-sub") Object.assign(el.style, { fontFamily: o.family ?? "Cinzel, serif", fontWeight: st === "cine-title" ? "700" : "500",
       fontSize: px(o.size ?? (st === "cine-title" ? 88 : 46)), color: o.color ?? "#fdf8ef", letterSpacing: st === "cine-title" ? "0.06em" : "0.3em",
-      textShadow: `0 ${px(4)} ${px(18)} rgba(0,0,0,0.55), 0 0 ${px(2)} rgba(0,0,0,0.6)` });
+      // a soft dark halo plus a crisp drop shadow keep the engraved serif readable on bright snow and sky
+      textShadow: `0 0 ${px(34)} rgba(10,14,22,0.5), 0 ${px(4)} ${px(14)} rgba(0,0,0,0.6), 0 ${px(1)} ${px(2)} rgba(0,0,0,0.75)` });
+    if (st === "cine-title") Object.assign(el.style, { padding: `${px(36)} ${px(60)}`,
+      background: "radial-gradient(ellipse at center, rgba(12,16,24,0.22) 0%, rgba(12,16,24,0.1) 50%, rgba(12,16,24,0) 78%)" });
     if (st === "tag") Object.assign(el.style, { background: "#fbf3e2", border: `${px(5)} solid #3a2622`, borderRadius: px(26), padding: `${px(14)} ${px(30)} ${px(16)}`,
       boxShadow: `0 ${px(8)} 0 rgba(58,38,34,0.35)` });
     if (st === "plain") Object.assign(el.style, { fontWeight: "600", textShadow: (o.color ?? "#2b1f1c").toLowerCase() > "#888888"
