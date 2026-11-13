@@ -7,6 +7,7 @@ Review pages are claude.ai artifacts with comment threads; read them with the ar
 | 1 | Characters (arm fix) + six environments | 5520cc29-dc66-4446-9d79-e09d555f0dbf | 2026-11-12 |
 | 2 | Changes to 06 (cross-section), 07 (wheat), 08 (child focus) | c54ae28b-99b2-476d-b538-95617aa012ee | 2026-11-13 |
 | 3 | Hands fixed (cold pose) at 0:38, 0:41, 0:49, 1:13 | be118b82-f01a-48e0-b59e-7989f9af5f08 | 2026-11-13 |
+| 4 | Cinematic style frames (leaf, reveal, eruption, 2x science, harvest, market, title) | dbbaf33e-3ff9-407e-97fc-ddc6d1062902 | 2026-11-13 |
 
 Decisions so far
 - 2026-11-12: characters approved (faces, face shape, clothes, proportions); fix = no line at the elbow -> done,
@@ -17,3 +18,7 @@ Decisions so far
 - 2026-11-13 preview v2 feedback (chat): user likes visuals, music and SFX; hands interlock in the cold pose at
   0:37, 0:48, 1:12 -> new self-hug shiver pose (clips.ts), pose blending starts from rest values, crossfades keep the
   outgoing shot's camera, cloud palettes quantized. User asked to approve pictures before the video is rendered.
+- 2026-11-13 preview v2 review (chat): approve-before-final; asked for a cinematic 3D documentary look, leaf opening,
+  bigger eruption, clearer SO2 -> aerosol -> reflection science, more varied shots, title held 2-3 s to the end,
+  61-80 s. Done for review 4: VO pauses tightened to 78.4 s (words untouched), eight style frames
+  (videos/tambora-v2-frames). Market board shows a rising price without numbers (script says only "rising prices").
