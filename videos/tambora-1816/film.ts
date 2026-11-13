@@ -228,6 +228,7 @@ export default defineFilm({
         c.near = 0.1; c.far = 2000;
         snow.amount = 0; rain.amount = 0;
         for (const o of volcSet) o.visible = set === "volcano";
+
         space.visible = set === "globe"; cine.root.visible = set !== "globe";
         pin.group.visible = false; for (const a of arcs) a.mesh.visible = false;
         for (const m of macro) m.s.visible = id === "01-leaf" || id === "15-leaf-frozen";
@@ -235,7 +236,7 @@ export default defineFilm({
 
         // ============================================================ globe
         if (set === "globe") {
-          scene.fog = null; scene.background = new THREE.Color("#05070f"); scene.environment = null;
+          scene.fog = null; scene.background = new THREE.Color("#05070f");
           c.near = 1; c.far = 200; c.updateProjectionMatrix();
           applyCam(c, { ...GLOBE_CAM, pos: [GLOBE_CAM.pos[0], GLOBE_CAM.pos[1], GLOBE_CAM.pos[2] - (f - shot.a) * 0.006] });
           const sun = V(0.75, 0.35, 0.8);
