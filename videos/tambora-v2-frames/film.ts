@@ -69,9 +69,10 @@ export default defineFilm({
     ground.receiveShadow = true; field.add(ground);
     field.add(wheatField({ w: 14, d: 10, count: 30000, h: 0.95, frost: 0.4, clear: [[0.4, 0.8, 0.85], [1.4, 2.6, 0.9]] }));
     const man = new Actor(FARMER_MAN, 1.75); man.root.position.copy(FIELD).add(V(0.4, 0, 0.8)); scene.add(man.root);
-    const woman = new Actor(FARMER_WOMAN, 1.62), w2 = new Actor(FARMER_WOMAN, 1.6), kid = new Actor(CHILD, 1.7);
+    const woman = new Actor(FARMER_WOMAN, 1.62), w2 = new Actor(FARMER_WOMAN, 1.6), kid = new Actor(CHILD, 2.5);
     const sq = V(-4.2, 0, -23);
-    woman.root.position.copy(sq).add(V(1.55, 0, 2.9)); w2.root.position.copy(sq).add(V(2.25, 0, 2.0)); kid.root.position.copy(sq).add(V(0.45, 0, 3.3));
+    const top = 0.064;   // the square is a raised cobbled disc: stand on it, not in it
+    woman.root.position.copy(sq).add(V(1.55, top, 2.9)); w2.root.position.copy(sq).add(V(2.25, top, 2.0)); kid.root.position.copy(sq).add(V(0.45, top, 3.3));
     scene.add(woman.root, w2.root, kid.root);
     // chalkboard at the bread stall
     const cb = document.createElement("canvas"); cb.width = 512; cb.height = 640;
