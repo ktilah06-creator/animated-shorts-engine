@@ -6,7 +6,7 @@
 // Crossfades: the outgoing shot is rendered first and copied to a 2D canvas under the WebGL canvas, which is then
 // drawn with the incoming shot at partial opacity; the page screenshot captures the composite (and any overlay DOM).
 import * as THREE from "three";
-import { EffectComposer, RenderPass, EffectPass, BloomEffect, ToneMappingEffect, ToneMappingMode, BlendFunction } from "postprocessing";
+import { EffectComposer, RenderPass, EffectPass, BloomEffect, ToneMappingEffect, ToneMappingMode, BlendFunction, GodRaysEffect, NoiseEffect, VignetteEffect, ChromaticAberrationEffect } from "postprocessing";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { InkPass, noInkFallback, NOINK, type InkOptions } from "./post/ink";
 import { LensBlur } from "./post/lensblur";
@@ -32,6 +32,8 @@ export type FrameState = {
   gradeAmount?: number;
   exposure?: number;
   ink?: boolean;                    // world outlines on/off for this frame
+  sun?: THREE.Vector3;              // world point of the sun (god rays source; post.godrays must be on)
+  godrays?: number;                 // god-ray strength 0..1 for this frame (default 0)
 };
 
 export type Stage = {
@@ -46,6 +48,11 @@ export type PostOptions = {
   bloom: boolean | { intensity?: number; threshold?: number; radius?: number };
   grade: boolean;
   multisampling: number;            // MSAA samples of the main buffer (4 final; previews may use 0)
+  tone: "neutral" | "aces" | "agx"; // tone curve (agx = filmic, for the cinematic look)
+  godrays: boolean;                 // sun shafts (FrameState.sun / godrays per frame)
+  grain: number;                    // film grain opacity (0 = off)
+  vignette: number;                 // vignette darkness (0 = off)
+  ca: number;                       // chromatic aberration offset (0 = off; ~0.0008 subtle)
 };
 
 export type FilmDef = {
@@ -120,7 +127,7 @@ async function start(film: FilmDef) {
   const scale = Number(q("scale") ?? 1);
   const width = Math.round(W0 * scale), height = Math.round(H0 * scale);
   const postOverride = q("post") ? (JSON.parse(q("post")!) as Partial<PostOptions>) : {};
-  const post: PostOptions = { ink: true, lens: true, bloom: true, grade: true, multisampling: 4, ...film.post, ...postOverride };
+  const post: PostOptions = { ink: true, lens: true, bloom: true, grade: true, multisampling: 4, tone: "neutral", godrays: false, grain: 0, vignette: 0, ca: 0, ...film.post, ...postOverride };
 
   // page: [snapshot 2D canvas] [WebGL canvas] [overlay DOM] [flash]
   document.body.style.background = film.background ?? "#000";
@@ -176,6 +183,16 @@ async function start(film: FilmDef) {
     lens = d as unknown as { focus: number; cInf: number };
   }
   for (const p of lensPasses) composer.addPass(p as never);
+  // god rays from a sun disc that the runtime places along FrameState.sun
+  let rays: GodRaysEffect | null = null, raysPass: EffectPass | null = null;
+  const sunDisc = new THREE.Mesh(new THREE.SphereGeometry(60, 24, 12), new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.92, 0.8), fog: false, transparent: true, depthWrite: false }));
+  sunDisc.frustumCulled = false; sunDisc.layers.enable(NOINK);
+  if (post.godrays) {
+    scene.add(sunDisc);
+    rays = new GodRaysEffect(cam, sunDisc, { samples: 48, density: 0.94, decay: 0.92, weight: 0.5, exposure: 0.55, clampMax: 1, resolutionScale: 0.5, blur: true });
+    raysPass = new EffectPass(cam, rays);
+    composer.addPass(raysPass);
+  }
   const finals = [];
   if (post.bloom) {
     const o = typeof post.bloom === "object" ? post.bloom : {};
@@ -187,9 +204,12 @@ async function start(film: FilmDef) {
     mip.setSize = (w: number, h: number) => setSize(Math.round((1920 * w) / Math.max(h, 1)), 1920);
     finals.push(bloom);
   }
-  finals.push(new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL }));
+  finals.push(new ToneMappingEffect({ mode: post.tone === "agx" ? ToneMappingMode.AGX : post.tone === "aces" ? ToneMappingMode.ACES_FILMIC : ToneMappingMode.NEUTRAL }));
   const grade = post.grade ? new GradeEffect(GRADES.neutral, 1) : null;
   if (grade) finals.push(grade);
+  if (post.ca > 0) finals.push(new ChromaticAberrationEffect({ offset: new THREE.Vector2(post.ca, post.ca * 0.6), radialModulation: true, modulationOffset: 0.35 }));
+  if (post.vignette > 0) finals.push(new VignetteEffect({ offset: 0.32, darkness: post.vignette }));
+  if (post.grain > 0) { const n = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: false }); n.blendMode.opacity.value = post.grain; finals.push(n); }
   composer.addPass(new EffectPass(cam, ...finals));
 
   const shots = film.shots.slice().sort((x, y) => x.a - y.a);
@@ -226,6 +246,18 @@ async function start(film: FilmDef) {
       grade.amount = st.gradeAmount ?? 1;
     }
     renderer.toneMappingExposure = st.exposure ?? 1;
+    if (rays && raysPass) {
+      const on = !!st.sun && (st.godrays ?? 0) > 0.01;
+      raysPass.enabled = on; sunDisc.visible = on;
+      if (on) {
+        sunDisc.position.copy(st.sun!);
+        (rays as unknown as { godRaysMaterial: { uniforms: { weight: { value: number } } } }).godRaysMaterial.uniforms.weight.value = 0.55 * st.godrays!;
+      }
+    }
+    // time-based effects (grain) get the frame's own time, not an accumulated one: frames render identically in any order
+    for (const ps of composer.passes as unknown as { fullscreenMaterial?: { time?: number } }[]) {
+      if (ps.fullscreenMaterial && typeof ps.fullscreenMaterial.time === "number") ps.fullscreenMaterial.time = f / fps - 1 / fps;
+    }
     composer.render(1 / fps);
   };
 
