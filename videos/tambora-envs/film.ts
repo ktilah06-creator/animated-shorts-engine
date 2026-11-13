@@ -118,7 +118,7 @@ export default defineFilm({
         } else if (id === "village-rain") {
           applyCam(c, P([1.2, 1.5, 4.2], [-3.0, 1.35, -3.2], 50, VIL));
           rig.apply("overcast", c, { focus: VIL.clone().add(V(-2, 1, -3)), radius: 18 }); clouds.apply("overcast", c);
-          queue.forEach((a, i) => a.update({ ...idle(10, 10 + i), expression: i === 0 ? "worried" : i === 3 ? "sad" : "neutral", turn: -0.5, look: [-0.8, 0] }, c, rig));
+          queue.forEach((a, i) => a.update({ ...idle(10, 10 + i), expression: (["worried", "worried", "sad", "sad"] as const)[i], turn: -0.5, look: [-0.8, 0] }, c, rig));
           board.set("Bread", "3×", "#b0302a");
           rain.update(30, c);
           // keep the whole queue sharp (child in front .. adults behind); only the street beyond blurs
