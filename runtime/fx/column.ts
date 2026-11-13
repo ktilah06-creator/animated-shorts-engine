@@ -118,7 +118,7 @@ export class EruptionColumn {
       const side = 0.5 + 0.5 * (Math.cos(a) * sunDir.x + Math.sin(a) * sunDir.z);
       tmp.copy(this.dark).lerp(this.lit, Math.min(1, 0.35 + 0.35 * side + 0.3 * dome + 0.15 * hs(i, 15)));
       m.color.copy(tmp).multiply(light);
-      m.opacity = 0.92 * Math.min(1, umbGrow * 2.2 - q * 0.8);
+      m.opacity = 0.92 * Math.max(0, Math.min(1, umbGrow * 2.2 - q * 0.8));   // never negative: negative alpha poisons the blend
       m.rotation = hs(i, 16) * 6.283;
       sp.visible = true;
     }

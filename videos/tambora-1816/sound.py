@@ -19,7 +19,7 @@ DUR = tl["frames"] / FPS
 N = ns(DUR)
 shot = {s["id"]: (s["a"] / FPS, s["b"] / FPS) for s in tl["shots"]}
 boom_t = next(e["f"] / FPS for e in tl["sound"] if e["kind"] == "boom")
-title_t = shot["14-title"][0]
+title_t = next(e["f"] / FPS for e in tl["sound"] if e["kind"] == "chime")   # closing title card
 
 def m(n):  # note name -> frequency, e.g. "F4", "Bb3", "C#5"
     names = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
@@ -63,20 +63,20 @@ def melody(t0, notes, inst="box", vel=0.45, pn=0.1):
         t += beats * 0.75
 
 B = 0.75  # one beat at 80 bpm
-a, b = shot["01-morning"]; s2 = shot["02-snow"][0]
-# 1-2: warm summer morning -> wonder at the snow
-pad_at(0.0, s2, ["F3", "A3", "C4", "E4"], 0.32, warm=1100)
-melody(0.4, [("F5", 1), ("A5", 1), ("C6", 1), ("A5", 0.5), ("G5", 0.5), ("F5", 1)], "box", 0.42)
-pad_at(s2, shot["03-globe-1816"][0] + 0.6, ["Bb2", "F3", "C4", "D4"], 0.3, warm=700, att=0.5)
-arp(s2 + 0.2, shot["03-globe-1816"][0], ["D6", "F6", "C6", "A5", "G6"], B / 2, 0.22, "glock", pn=0.3)
-# 3-4: the globe: curious plucked arpeggios
-t3, t5 = shot["03-globe-1816"][0], shot["05-tambora"][0]
+t_reveal, t_globe = shot["02-reveal"][0], shot["03-globe"][0]
+# 1-2: the summer leaf -> wonder at the snow over the village
+pad_at(0.0, t_reveal + 0.5, ["F3", "A3", "C4", "E4"], 0.32, warm=1100)
+melody(0.3, [("F5", 1), ("A5", 1), ("C6", 1), ("A5", 0.5), ("G5", 0.5)], "box", 0.42)
+pad_at(t_reveal, t_globe + 0.6, ["Bb2", "F3", "C4", "D4"], 0.3, warm=700, att=0.5)
+arp(t_reveal + 0.2, t_globe, ["D6", "F6", "C6", "A5", "G6"], B / 2, 0.22, "glock", pn=0.3)
+# 3: the globe: curious plucked arpeggios
+t5 = shot["04-eruption"][0]
 prog = [("D3", ["D4", "F4", "A4", "E5"]), ("Bb2", ["Bb3", "D4", "F4", "C5"]), ("F3", ["F4", "A4", "C5", "E5"]), ("C3", ["C4", "E4", "G4", "D5"])]
-seg = (t5 - t3) / len(prog)
+seg = (t5 - t_globe) / len(prog)
 for k, (bass, notes) in enumerate(prog):
-    pad_at(t3 + k * seg, t3 + (k + 1) * seg, [bass] + notes[:3], 0.22, warm=800)
-    arp(t3 + k * seg, t3 + (k + 1) * seg, notes, B / 2, 0.32, "pluck", pattern=[0, 1, 2, 3, 2, 1])
-# 5: Tambora: low drone, rising tension, the blast
+    pad_at(t_globe + k * seg, t_globe + (k + 1) * seg, [bass] + notes[:3], 0.22, warm=800)
+    arp(t_globe + k * seg, t_globe + (k + 1) * seg, notes, B / 2, 0.32, "pluck", pattern=[0, 1, 2, 3, 2, 1])
+# 4: Tambora: low drone, rising tension, the blast
 pad_at(t5, boom_t, ["D2", "A2", "D3"], 0.36, warm=500, att=2.0)
 roll = np.zeros((2, ns(boom_t - t5)))
 for k in range(int((boom_t - t5 - 1.5) / 0.12)):
@@ -85,49 +85,49 @@ for k in range(int((boom_t - t5 - 1.5) / 0.12)):
 place(mus, roll, t5)
 place(mus, st(I.timpani(m("D2"), vel=1.0, r=rng(9), dur=3.5)), boom_t, 1.6)
 place(mus, st(I.brass(m("D2"), 2.5, vel=0.9, r=rng(10), kind="soft")), boom_t, 0.8)
-t6 = shot["06-so2"][0]
+t6 = shot["05-so2"][0]
 pad_at(boom_t + 0.3, t6 + 0.5, ["D2", "A2", "F3", "Ab3"], 0.33, warm=600, att=0.6)
-# 6-7: explainer pulse (8ths), Dm -> Bb -> Gm -> A
-t8 = shot["08-dimming"][0]
+# 5-6: explainer pulse (8ths), Dm -> Bb -> Gm -> A
+t8 = shot["07-cooling"][0]
 prog = [("D3", ["D4", "F4", "A4", "D5"]), ("Bb2", ["D4", "F4", "Bb4", "D5"]), ("G2", ["D4", "G4", "Bb4", "D5"]), ("A2", ["C#4", "E4", "A4", "E5"])]
 seg = (t8 - t6) / len(prog)
 for k, (bass, notes) in enumerate(prog):
     pad_at(t6 + k * seg, t6 + (k + 1) * seg, [bass] + notes[:3], 0.2, warm=900)
     arp(t6 + k * seg, t6 + (k + 1) * seg, notes, B / 2, 0.3, "pluck", pattern=[0, 2, 1, 3], bright=0.55)
-# 8-9: cooling: sparse descending glock over minor pads
-t9, t10 = shot["09-north"][0], shot["10a-cold"][0]
+# 7-8: cooling: sparse descending glock over minor pads
+t9, t10 = shot["08-north"][0], shot["09-cold"][0]
 pad_at(t8, t9, ["G2", "D3", "Bb3", "F4"], 0.3, warm=700)
-melody(t8 + 0.5, [("D6", 2), ("C6", 2), ("Bb5", 2), ("A5", 3)], "glock", 0.3)
+melody(t8 + 0.3, [("D6", 1.5), ("C6", 1.5), ("Bb5", 1.5)], "glock", 0.3)
 pad_at(t9, t10, ["Eb3", "G3", "Bb3", "D4"], 0.3, warm=700)
 arp(t9 + 0.3, t10, ["G5", "Bb5", "D6", "F6"], B, 0.18, "glock", pn=-0.3)
-# 10-12: hardship: slow vibes melody in D minor
-t13 = shot["13-far-beyond"][0]
+# 9-13: hardship: slow vibes melody in D minor
+t14 = shot["14-far-beyond"][0]
 prog = [("D2", ["D3", "F3", "A3"]), ("Bb1", ["D3", "F3", "Bb3"]), ("G2", ["D3", "G3", "Bb3"]), ("A2", ["C#3", "E3", "A3"])]
-seg = (t13 - t10) / 6
+seg = (t14 - t10) / 6
 for k in range(6):
     bass, notes = prog[k % 4]
     pad_at(t10 + k * seg, t10 + (k + 1) * seg, [bass] + notes, 0.28, warm=650)
     arp(t10 + k * seg, t10 + (k + 1) * seg, [n[:-1] + str(int(n[-1]) + 1) for n in notes], B, 0.22, "pluck", pattern=[0, 1, 2, 1])
 melody(t10 + 1.0, [("A4", 2), ("D5", 1), ("F5", 1), ("E5", 2), ("D5", 2), (None, 1), ("C5", 1), ("D5", 1), ("Bb4", 1), ("A4", 4),
                    (None, 2), ("F5", 2), ("E5", 1), ("D5", 1), ("C#5", 2), ("D5", 3)], "vibes", 0.32, pn=-0.15)
-# 13: build to the title
-pad_at(t13, title_t, ["D2", "A2", "D3", "F3", "A3"], 0.32, warm=900, att=1.5)
-arp(t13 + 0.5, title_t, ["D4", "A4", "F5", "A4"], B / 2, 0.3, "pluck", bright=0.6)
-sw = np.zeros((2, ns(title_t - t13)))
-for k in range(int((title_t - t13 - 3) / 0.1)):
-    place(sw, I.timpani(m("A1"), vel=0.05 + 0.35 * (k * 0.1 / (title_t - t13 - 3)) ** 2, r=rng(800 + k), dur=0.8), 3 + k * 0.1)
-place(mus, sw, t13)
-# 14: title: the opening motif, slower, over a bittersweet chord
-t15 = shot["15-reminder"][0]
-place(mus, st(I.timpani(m("D2"), vel=0.7, r=rng(77), dur=2.8)), title_t, 1.0)
-pad_at(title_t, t15 + 0.5, ["Bb2", "F3", "A3", "D4"], 0.32, warm=900)
-melody(title_t + 0.3, [("F5", 1.5), ("A5", 1.5), ("C6", 1.5), ("A5", 1)], "glock", 0.4)
-# 15: resolve and fade
-pad_at(t15, t15 + 2.6, ["D3", "F3", "A3", "D4"], 0.3, warm=900)
-pad_at(t15 + 2.6, DUR, ["Bb2", "F3", "A3", "D4"], 0.3, warm=900, rel=0.4)
-melody(t15 + 0.8, [("A5", 2), ("F5", 2), ("D5", 4)], "box", 0.32)
+# 14: far beyond its birthplace: a broad swell
+t15 = shot["15-leaf-frozen"][0]
+pad_at(t14, t15 + 0.4, ["D2", "A2", "D3", "F3", "A3"], 0.32, warm=900, att=1.5)
+arp(t14 + 0.5, t15, ["D4", "A4", "F5", "A4"], B / 2, 0.28, "pluck", bright=0.6)
+sw = np.zeros((2, ns(t15 - t14)))
+for k in range(int((t15 - t14 - 2) / 0.1)):
+    place(sw, I.timpani(m("A1"), vel=0.05 + 0.3 * (k * 0.1 / (t15 - t14 - 2)) ** 2, r=rng(800 + k), dur=0.8), 2 + k * 0.1)
+place(mus, sw, t14)
+# 15: the frozen leaf: the opening motif, slower, over a bittersweet chord
+place(mus, st(I.timpani(m("D2"), vel=0.55, r=rng(77), dur=2.8)), t15, 1.0)
+pad_at(t15, title_t + 0.3, ["Bb2", "F3", "A3", "D4"], 0.32, warm=900)
+melody(t15 + 0.3, [("F5", 1.5), ("A5", 1.5), ("C6", 1.5), ("A5", 1)], "glock", 0.4)
+melody(t15 + 6.5, [("A5", 2), ("F5", 2), ("D5", 3)], "box", 0.3)
+# 16: the title card: resolve and hold to the last frame
+pad_at(title_t, DUR, ["D3", "F3", "A3", "D4"], 0.32, warm=900, rel=0.4)
+melody(title_t + 0.2, [("D5", 1), ("F5", 1), ("A5", 3)], "glock", 0.36)
 mus = mus + convolve_st(mus * 0.35, make_ir(2.4, 3, hf=1.4))
-mus[:, -ns(0.6):] *= np.linspace(1, 0, ns(0.6))
+mus[:, -ns(0.8):] *= np.linspace(1, 0, ns(0.8))
 
 # ---------------------------------------------------------------- sfx
 sfx = np.zeros((2, N))

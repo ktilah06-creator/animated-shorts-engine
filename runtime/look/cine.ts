@@ -61,6 +61,14 @@ export class CineRig {
     scene.add(this.root);
     this.pmrem = new THREE.PMREMGenerator(renderer);
     this.envSky.scale.setScalar(100); this.envScene.add(this.envSky);
+    // Sky.js can emit NaN/Inf for some directions (below the horizon, low sun, high turbidity). On screen it rarely
+    // shows, but baked into the PMREM environment it turns every PBR surface black and bloom spreads it in blocks.
+    for (const sk of [this.sky, this.envSky]) {
+      const m = sk.material as THREE.ShaderMaterial;
+      m.fragmentShader = m.fragmentShader.replace("#include <tonemapping_fragment>",
+        "if (any(isnan(gl_FragColor.rgb)) || any(isinf(gl_FragColor.rgb))) gl_FragColor.rgb = vec3(0.0);\n\t\t\tgl_FragColor.rgb = clamp(gl_FragColor.rgb, 0.0, 64.0);\n\t\t\t#include <tonemapping_fragment>");
+      m.needsUpdate = true;
+    }
   }
 
   /** world direction toward the sun for a preset */
