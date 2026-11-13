@@ -37,13 +37,22 @@ W, H = 180, 320
 raw = subprocess.run(["ffmpeg", "-v", "error", "-i", vid, "-vf", f"scale={W}:{H}:flags=area", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
 F = np.frombuffer(raw, np.uint8).reshape(-1, H, W, 3)
 n = len(F)
-f32 = F.astype(np.float32) / 255
-luma = (f32 @ np.array([0.2126, 0.7152, 0.0722], np.float32))
-mx, mn = f32.max(-1), f32.min(-1)
-sat = np.where(mx > 0.06, (mx - mn) / np.maximum(mx, 1e-6), 0)
-L = luma.reshape(n, -1)
-stats = {"mean": L.mean(1), "std": L.std(1), "p2": np.percentile(L, 2, 1), "p98": np.percentile(L, 98, 1), "sat": sat.reshape(n, -1).mean(1)}
-diff = np.abs(np.diff(F.astype(np.int16), axis=0)).mean(axis=(1, 2, 3))
+# engine: per-frame statistics in chunks (a full-length float copy of every frame needs several GB)
+stats = {k: np.zeros(n, np.float32) for k in ("mean", "std", "p2", "p98", "sat")}
+diff = np.zeros(max(0, n - 1), np.float32)
+for c0 in range(0, n, 200):
+    c1 = min(n, c0 + 200)
+    f32 = F[c0:c1].astype(np.float32) / 255
+    L = (f32 @ np.array([0.2126, 0.7152, 0.0722], np.float32)).reshape(c1 - c0, -1)
+    mx, mn = f32.max(-1), f32.min(-1)
+    sat = np.where(mx > 0.06, (mx - mn) / np.maximum(mx, 1e-6), 0)
+    stats["mean"][c0:c1] = L.mean(1); stats["std"][c0:c1] = L.std(1)
+    stats["p2"][c0:c1] = np.percentile(L, 2, 1); stats["p98"][c0:c1] = np.percentile(L, 98, 1)
+    stats["sat"][c0:c1] = sat.reshape(c1 - c0, -1).mean(1)
+    d1 = min(n - 1, c1)
+    if d1 > c0:
+        diff[c0:d1] = np.abs(F[c0 + 1:d1 + 1].astype(np.int16) - F[c0:d1].astype(np.int16)).mean(axis=(1, 2, 3))
+    del f32, L, mx, mn, sat
 med = np.array([np.median(diff[max(0, i - 8):i + 9]) for i in range(len(diff))])
 pops = [i + 1 for i in range(len(diff)) if diff[i] > 3 * med[i] + 1.0 and (i + 1) not in planned]
 black = [i for i in range(n) if stats["mean"][i] < 0.04]

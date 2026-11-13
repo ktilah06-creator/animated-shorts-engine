@@ -153,5 +153,12 @@ export const GRADE_COLD: GradeParams = {
   tintS: [0.025, -0.012], tintM: [0.012, -0.006], tintH: [0.006, -0.004],
   vig: [0.18, 0.42],
 };
+/** blend two grades (for light that changes within a shot: no pop when the preset changes) */
+export function mixGrade(a: GradeParams, b: GradeParams, t: number): GradeParams {
+  const k = Math.min(1, Math.max(0, t));
+  const m = (x: number[], y: number[]) => x.map((v, i) => v + (y[i] - v) * k);
+  return { ky: m(a.ky, b.ky), sat: m(a.sat, b.sat) as GradeParams["sat"], tintS: m(a.tintS, b.tintS) as GradeParams["tintS"],
+    tintM: m(a.tintM, b.tintM) as GradeParams["tintM"], tintH: m(a.tintH, b.tintH) as GradeParams["tintH"], vig: m(a.vig, b.vig) as GradeParams["vig"] };
+}
 export const GRADES: Record<string, GradeParams> = { neutral: GRADE_NEUTRAL, day: GRADE_DAY, golden: GRADE_GOLDEN, night: GRADE_NIGHT,
   summer: GRADE_DAY, overcast: GRADE_COLD, cold: GRADE_COLD };

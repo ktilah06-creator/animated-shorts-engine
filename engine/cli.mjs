@@ -3,7 +3,7 @@
 //   node engine/cli.mjs vendor                                   fetch pinned three.js + postprocessing
 //   node engine/cli.mjs build   <film>                           bundle only (fast syntax/import check)
 //   node engine/cli.mjs stills  <film> <f1,f2,..> [--scale 0.5] [--post '{"ink":false}']
-//   node engine/cli.mjs render  <film> [--preview] [--only s1,s2] [--audio file.wav] [--scale x] [--crf n]
+//   node engine/cli.mjs render  <film> [--preview] [--only s1,s2 [--reuse]] [--audio file.wav] [--scale x] [--crf n]
 //   node engine/cli.mjs cues    <film> <audio> [script.txt]          optional timing cues -> videos/<film>/cues.json
 //   node engine/cli.mjs timeline <film>                        shots, flashes, sound events -> out/<film>/timeline.json
 //   node engine/cli.mjs sound   <film> [--voice file]            run videos/<film>/sound.py (music + sfx + final mix)
@@ -44,7 +44,7 @@ async function main() {
     case "render": {
       const { renderFilm } = await import("./render.mjs");
       const { file, report } = await renderFilm(pos[0], {
-        mode: flags.preview ? "preview" : "final", only: flags.only ? String(flags.only).split(",") : undefined,
+        mode: flags.preview ? "preview" : "final", only: flags.only ? String(flags.only).split(",") : undefined, reuse: !!flags.reuse,
         audio: flags.audio, scale: num(flags.scale), crf: num(flags.crf), post,
       });
       console.log(`wrote ${path.relative(P.root, file)}  ${JSON.stringify(report.probe)}`);

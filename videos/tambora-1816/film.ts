@@ -14,6 +14,7 @@ import { Plume } from "@engine/fx/plume";
 import { volcanoIsland } from "@engine/env/terrain";
 import { Globe, GlobeArc, globePin, starField } from "@engine/geo/globe";
 import { Label, loadFont } from "@engine/overlay/label";
+import { GRADES, mixGrade } from "@engine/post/grade";
 import { Thermometer } from "@engine/overlay/thermometer";
 import { camPath, applyCam, smootherstep, type CamPose } from "@engine/camera";
 import { V } from "@engine/env/geo";
@@ -218,7 +219,8 @@ export default defineFilm({
           snow.update(f, c);
           woman.update(wom, c, rig);
           const focus = id === "10c-summer-snow" ? V(8, 0.8, -8) : V(0, 1.4, 0.6);
-          return { grade: P.look.sat < 0.8 ? "cold" : "summer", cInf: id === "02-snow" ? 9 : 5, focus };
+          const coldK = Math.min(1, Math.max(0, (0.86 - P.look.sat) / (0.86 - 0.72)));   // follows the summer -> overcast blend
+          return { grade: mixGrade(GRADES.summer, GRADES.cold, coldK), cInf: id === "02-snow" ? 9 : 5, focus };
         }
 
         // ------------------------------------------------ frost farm: failed harvest
@@ -236,7 +238,8 @@ export default defineFilm({
           };
           // he looks out over the field, then sinks to one knee on "harvests failed" and lifts a dead stalk
           const kneel = f >= T.harvests ? 1 : 0;
-          const stand: Pose = { ...idle(f, 2), expression: "worried", turn: 0.3, look: [0.6, 0.4] };
+          const dip = ease((f - (T.harvests - 7)) / 7);                    // sinks a little before the knee goes down
+          const stand: Pose = { ...idle(f, 2), expression: dip > 0.3 ? "sad" : "worried", turn: 0.3, look: [0.6, 0.4 + dip * 0.5], bob: -70 * dip, lean: 4 * dip };
           const down: Pose = { ...idle(f, 2), expression: "sad", kneel: 1, armR: [28, 70], armL: [14, 30], tilt: 6, look: [0.5, 0.8], hold: stalk };
           man.update(kneel ? blend({ ...down, armR: [8, 6] }, down, (f - T.harvests - 4) / 16) : stand, c, rig);
           kid.update({ ...idle(f, 3), expression: "worried", turn: 0.4, look: [0.6, 0.6] }, c, rig);
@@ -294,29 +297,29 @@ export default defineFilm({
 
         // ------------------------------------------------ globe
         scene.fog = null; scene.background = new THREE.Color("#05070f");
-        applyCam(c, GLOBE_CAM);
+        applyCam(c, { ...GLOBE_CAM, pos: [GLOBE_CAM.pos[0], GLOBE_CAM.pos[1], GLOBE_CAM.pos[2] - (f - shot.a) * 0.006] });   // slow push-in
         const id = shot.id;
         const sun = V(0.75, 0.35, 0.8);
         if (id === "03-globe-1816") {
-          faceBetween([25, -60], ATLANTIC, ease((f - shot.a) / 60));
+          faceBetween([25, -72], [42, -30], smootherstep((f - shot.a) / (shot.b - shot.a + 30)));   // keeps turning all shot long
           const nf = W("North", T.y1816), ef = W("Europe", T.y1816);
           globe.update({ sunDir: sun, hi: { na: ease((f - nf + 4) / 10), eu: ease((f - ef + 4) / 10) } });
           L.year.update(f, { at: [0.5, 0.17], from: W("1816,", T.y1816) - 2, to: T.away + 6 });
           L.na.update(f, { at: globe.at(45, -98, 0.05), ...lt(nf - 2, T.away + 6) });
           L.eu.update(f, { at: globe.at(50, 12, 0.05), ...lt(ef - 2, T.away + 6) });
         } else if (id === "04-far-away") {
-          const t = smootherstep((f - T.away) / 70);
-          faceBetween(ATLANTIC, [-4, 98], t, 0);
+          const t = smootherstep((f - T.away) / 70) * 0.94 + 0.06 * (f - T.away) / (T.tambora - T.away);
+          faceBetween([42, -30], [-4, 102], t, 0);
           globe.update({ sunDir: sun, hi: { na: 1, eu: 1, id: ease((f - T.away - 40) / 15) } });
           pin.group.visible = true; pin.pulse((f - T.away) / 30);
           arcs.forEach((a) => { a.mesh.visible = true; a.progress = ease((f - T.away - 25) / 55); });
         } else if (id === "09-north") {
-          faceBetween([30, 10], [32, 10], ease((f - shot.a) / 60), 18);
+          faceBetween([26, -8], [34, 24], (f - shot.a) / (shot.b - shot.a), 18);
           globe.update({ sunDir: sun, hi: {}, north: ease((f - W("Northern", T.north) + 6) / 18), northColor: "#9cc6ff" });
           L.nh.update(f, { at: [0.5, 0.2], from: W("Northern", T.north) - 2, to: T.cold + 6 });
         } else if (id === "13-far-beyond") {
-          const t = smootherstep((f - T.conseq) / 120);
-          faceBetween([5, 90], [30, 20], t, 6);
+          const t = smootherstep((f - T.conseq) / (T.title - T.conseq + 20));
+          faceBetween([5, 90], [30, 14], t, 6);
           globe.update({ sunDir: sun, hi: { na: ease((f - T.conseq - 60) / 20), eu: ease((f - T.conseq - 60) / 20), id: 1 }, veil: { src: TAMBORA, spread: 0.15 + 0.85 * ease((f - T.conseq) / 150), opacity: 0.85 }, t: f / FPS });
           arcs.forEach((a) => { a.mesh.visible = true; a.progress = ease((f - T.conseq - 10) / 80); });
           pin.group.visible = true; pin.pulse((f - T.conseq) / 30);

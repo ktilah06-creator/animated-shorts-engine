@@ -221,7 +221,8 @@ async function start(film: FilmDef) {
     }
     if (grade) {
       const g = st.grade ?? "neutral";
-      if (g !== gradeKey) { grade.set(typeof g === "string" ? (GRADES[g] ?? GRADES.neutral) : g); gradeKey = g; }
+      const gk = typeof g === "string" ? g : JSON.stringify(g);
+      if (gk !== gradeKey) { grade.set(typeof g === "string" ? (GRADES[g] ?? GRADES.neutral) : g); gradeKey = gk; }
       grade.amount = st.gradeAmount ?? 1;
     }
     renderer.toneMappingExposure = st.exposure ?? 1;

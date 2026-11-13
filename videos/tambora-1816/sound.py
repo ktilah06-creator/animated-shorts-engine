@@ -152,6 +152,6 @@ sfx = sfx + convolve_st(sfx * 0.12, make_ir(1.2, 5, hf=1.6))
 
 write_wav(os.path.join(OUT, "music.wav"), mus / max(1e-9, np.abs(mus).max()) * 0.9, 24)
 write_wav(os.path.join(OUT, "sfx.wav"), sfx / max(1e-9, np.abs(sfx).max()) * 0.9, 24)
-rep = mixer.mix(VOICE, mus, sfx, DUR, os.path.join(OUT, "mix.wav"), target_lufs=-14.0, ceil_db=-1.0, duck_db=-7.0, music_db=-12.0, sfx_db=-11.0,
+rep = mixer.mix(VOICE, mus, sfx, DUR, os.path.join(OUT, "mix.wav"), target_lufs=-14.0, ceil_db=-1.5, duck_db=-7.0, music_db=-12.0, sfx_db=-11.0,
                 report_path=os.path.join(OUT, "mix_report.json"))
 print("mix:", json.dumps(rep))
