@@ -165,6 +165,8 @@ export class Globe {
     out.set(-Math.cos(ph) * Math.cos(la) * r, Math.sin(la) * r, Math.sin(ph) * Math.cos(la) * r);
     return this.root.localToWorld(out);
   }
+  /** world position of the globe centre */
+  center(out = new THREE.Vector3()) { this.root.updateMatrixWorld(true); return this.root.getWorldPosition(out); }
   /** rotate the globe so (lat, lon) faces `toward` (world direction from the globe centre, e.g. to the camera),
    *  keeping north up on screen; tiltDeg tips the north pole toward the viewer */
   face(lat: number, lon: number, toward: THREE.Vector3, tiltDeg = 0) {
@@ -185,11 +187,12 @@ export class Globe {
   }
   /** great-circle arc (world points), lifted toward the middle by `lift` radii */
   arc(a: [number, number], b: [number, number], n = 64, lift = 0.12) {
-    const A = this.at(a[0], a[1]).sub(this.root.position).normalize(), B = this.at(b[0], b[1]).sub(this.root.position).normalize();
+    const C = this.center();
+    const A = this.at(a[0], a[1]).sub(C).normalize(), B = this.at(b[0], b[1]).sub(C).normalize();
     const out: THREE.Vector3[] = [];
     for (let i = 0; i <= n; i++) {
       const t = i / n, v = new THREE.Vector3().copy(A).lerp(B, t).normalize();
-      out.push(v.multiplyScalar(this.radius * (1.01 + lift * Math.sin(Math.PI * t))).add(this.root.position));
+      out.push(v.multiplyScalar(this.radius * (1.01 + lift * Math.sin(Math.PI * t))).add(C));
     }
     return out;
   }
@@ -202,7 +205,7 @@ export class Globe {
     this.U.northAmt.value = o.north ?? 0;
     if (o.northColor) this.U.north.value.set(o.northColor);
     if (o.veil) {
-      if (o.veil.src) { const p = this.at(o.veil.src[0], o.veil.src[1]).sub(this.root.position); this.veilU.src.value.copy(p).applyQuaternion(this.root.quaternion.clone().invert()); }
+      if (o.veil.src) { const la = THREE.MathUtils.degToRad(o.veil.src[0]), ph = THREE.MathUtils.degToRad(o.veil.src[1] + 180); this.veilU.src.value.set(-Math.cos(ph) * Math.cos(la), Math.sin(la), Math.sin(ph) * Math.cos(la)); } // local (shader works in local space)
       this.veilU.spread.value = o.veil.spread; this.veilU.opacity.value = o.veil.opacity;
     } else this.veilU.opacity.value = 0;
     this.veilU.t.value = o.t ?? 0;
@@ -222,4 +225,35 @@ export function starField(count = 2500, radius = 400, seed = 3) {
   const pts = new THREE.Points(g, new THREE.PointsMaterial({ color: "#e8eeff", size: 1.6, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.85 }));
   pts.layers.set(NOINK); pts.frustumCulled = false;
   return pts;
+}
+
+/** a dashed arc drawn on progressively (instanced dots), plus helpers for a location pin */
+export class GlobeArc {
+  readonly mesh: THREE.InstancedMesh;
+  private pts: THREE.Vector3[];
+  constructor(points: THREE.Vector3[], { color = "#ffd36b", size = 0.07, every = 2 } = {}) {
+    this.pts = points.filter((_, i) => i % every === 0);
+    this.mesh = new THREE.InstancedMesh(new THREE.SphereGeometry(size, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(1.4) }), this.pts.length);
+    this.mesh.layers.set(NOINK);
+    this.mesh.frustumCulled = false;
+    this.progress = 0;
+  }
+  set progress(p: number) {
+    const n = Math.round(this.pts.length * Math.min(1, Math.max(0, p))), m = new THREE.Matrix4();
+    this.pts.forEach((v, i) => { m.makeScale(i < n ? 1 : 0, i < n ? 1 : 0, i < n ? 1 : 0).setPosition(v); this.mesh.setMatrixAt(i, m); });
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+
+/** a map pin: a ring and a dot that can pulse (world position, facing outward from the globe centre) */
+export function globePin(color = "#e2553f") {
+  const g = new THREE.Group();
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 12), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(1.3) }));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.22, 32), new THREE.MeshBasicMaterial({ color, transparent: true, side: THREE.DoubleSide }));
+  g.add(dot, ring); g.traverse((o) => o.layers.set(NOINK));
+  return {
+    group: g,
+    place(p: THREE.Vector3, center: THREE.Vector3) { g.position.copy(p); g.lookAt(p.clone().sub(center).multiplyScalar(2).add(center)); },
+    pulse(t: number) { const k = (t % 1); ring.scale.setScalar(1 + k * 2.2); (ring.material as THREE.MeshBasicMaterial).opacity = 1 - k; },
+  };
 }
