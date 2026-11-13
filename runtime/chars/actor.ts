@@ -31,6 +31,9 @@ export class Actor {
   private blob: THREE.Mesh;
   private shadowCard: THREE.Mesh;
   private v = new THREE.Vector3(); private w = new THREE.Vector3();
+  /** ground-contact occlusion: darkens the figure toward its feet (0 = off), so cards sit in the scene instead of floating */
+  ao = 0;
+  aoColor = "20,24,34";
   /** height: metres from sole to head top for an adult design (scale applies on top) */
   constructor(public design: Design, public height = 1.7) {
     this.canvas.width = CW; this.canvas.height = CH;
@@ -58,6 +61,8 @@ export class Actor {
 
   /** draw the pose and face the camera; rig (optional) supplies light colour and sun side */
   /** cinematic scenes: light the card from a CineRig-style setup (tint = light colour on the card, side/amount = shade band) */
+  /** blob shadow strength under the feet (0..1) */
+  set contact(v: number) { (this.blob.material as THREE.MeshBasicMaterial).opacity = v; }
   light(tint: THREE.ColorRepresentation, sunDir: THREE.Vector3, cam: THREE.Camera, shade = "rgb(60,64,90)", amount = 0.35) {
     this.mat.color.set(tint);
     this.w.setFromMatrixColumn(cam.matrixWorld, 0);
@@ -84,6 +89,14 @@ export class Actor {
       light = { side, amount, shade: `rgb(${Math.round(Math.min(1, sh.r * 0.55) * 255)},${Math.round(Math.min(1, sh.g * 0.55) * 255)},${Math.round(Math.min(1, sh.b * 0.6) * 255)})` };
     }
     drawCharacter(this.g, this.design, { ...pose, light });
+    if (this.ao > 0) {
+      const g = this.g, top = GROUND - 330;
+      g.save(); g.globalCompositeOperation = "source-atop";
+      const gr = g.createLinearGradient(0, top, 0, GROUND);
+      gr.addColorStop(0, `rgba(${this.aoColor},0)`); gr.addColorStop(1, `rgba(${this.aoColor},${this.ao})`);
+      g.fillStyle = gr; g.fillRect(0, top, CW, GROUND - top + 40);
+      g.restore();
+    }
     this.tex.needsUpdate = true;
     this.card.scale.setScalar(s);
     this.shadowCard.scale.setScalar(s);
