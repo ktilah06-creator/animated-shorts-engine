@@ -1,6 +1,6 @@
 # Generic final mix: voice (gain only) + music (ducked under speech) + SFX -> master at a target integrated loudness
 # (default -14 LUFS, YouTube's reference) with a 4x-oversampled look-ahead limiter (true peak <= ceiling; default
-# -1.5 dBTP so the AAC encode, which overshoots by ~0.5 dB, still lands at or below -1 dBTP).
+# -2.0 dBTP: the AAC encode overshoots by up to ~1 dB and must still land at or below -1 dBTP).
 # Ducking follows the voice's own energy (no word timings needed). Exact length, 48 kHz stereo 24-bit.
 import json
 import subprocess
@@ -53,7 +53,7 @@ def limiter(x, ceil_db=-1.0, look=0.005, release=0.08):
     return x * np.minimum(g, need)
 
 
-def mix(voice_path, music, sfx, dur, out_path, target_lufs=-14.0, ceil_db=-1.5, duck_db=-7.0, music_db=-14.0, sfx_db=-12.0, report_path=None):
+def mix(voice_path, music, sfx, dur, out_path, target_lufs=-14.0, ceil_db=-2.0, duck_db=-7.0, music_db=-14.0, sfx_db=-12.0, report_path=None):
     """music / sfx are stereo arrays (any level): they are set relative to the voice (LU) before mastering"""
     n = ns(dur)
     fit = lambda a: np.pad(a, ((0, 0), (0, max(0, n - a.shape[1]))))[:, :n] if a is not None else np.zeros((2, n))
