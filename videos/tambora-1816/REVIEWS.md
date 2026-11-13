@@ -6,7 +6,7 @@ Review pages are claude.ai artifacts with comment threads; read them with the ar
 |---|---|---|---|
 | 1 | Characters (arm fix) + six environments | 5520cc29-dc66-4446-9d79-e09d555f0dbf | 2026-11-12 |
 | 2 | Changes to 06 (cross-section), 07 (wheat), 08 (child focus) | c54ae28b-99b2-476d-b538-95617aa012ee | 2026-11-13 |
-| 3 | Hands fixed (cold pose) at 0:38, 0:41, 0:49, 1:13 | (see log) | 2026-11-13 |
+| 3 | Hands fixed (cold pose) at 0:38, 0:41, 0:49, 1:13 | be118b82-f01a-48e0-b59e-7989f9af5f08 | 2026-11-13 |
 
 Decisions so far
 - 2026-11-12: characters approved (faces, face shape, clothes, proportions); fix = no line at the elbow -> done,
